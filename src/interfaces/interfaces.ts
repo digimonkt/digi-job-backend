@@ -17,7 +17,7 @@ interface decodedToken {
     iat: number
 }
 export interface CustomRequest extends Request {
-    user?: decodedToken;
-    files: any;
+    user?: decodedToken
+    files: any
 }
 

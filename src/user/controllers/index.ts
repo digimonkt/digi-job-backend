@@ -15,6 +15,7 @@ import jsonwebtoken from 'jsonwebtoken';
 import createToken from '../../middleware/create-token';
 import { getUserDetailService } from '../services/getUsersDetail-service';
 import MediaModel from '../../models/media-model';
+import { uploadFileService } from '../services/uploadFileService-service';
 
 interface Ikey {
     email: string,
@@ -192,21 +193,28 @@ const updateProfileImageHandler = async (req: CustomRequest, res: Response): Pro
     try {
         const sessionId = req.user._id; // Assuming you have the user ID available
         const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-        const userId = IUserSessionDocument.user
+        const userId = IUserSessionDocument.user.toString()
 
         const file_path = req.file?.filename
         const media_type = req.file?.mimetype
 
         // Set the file path where you want to save the uploaded photo
-        const media = await MediaModel.create({
-            media_type,
-            file_path: 'images/' + file_path
-        })
-        await UserModel.findByIdAndUpdate(userId, { display_image: media._id }, { new: true })
-        res.status(200).json({ body: { message: "Profile image updated successfully" } })
+        await uploadFileService(userId, file_path, media_type)
+        
+        res.status(200).json({ data: { path: `images/${file_path}` } })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ body: { message: "Profile image updated unsuccessfully" } })
+        res.status(500).json({ data: { path: '' } })
+    }
+}
+
+const searchQueryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const { role } = req.params as { role: "employer" | "job_seeker"}
+        const { search } = req.query as { search: string }
+
+        const data = await searchQueryService(role, search)
+    } catch (error) {
+        res.status(200).json({data: error.message})
     }
 }
 
@@ -217,5 +225,6 @@ export {
     changePassword,
     deleteSession,
     getUserDetailHandler,
-    updateProfileImageHandler
+    updateProfileImageHandler,
+    searchQueryHandler
 }
