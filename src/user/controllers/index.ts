@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { CustomRequest } from '../../interfaces/interfaces';
-import UserModel from '../../models/user-model';
+import UserModel, { profile_role } from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
 import JobSeekerModel from '../../models/jobSeeker-model';
 import EmployerModel from '../../models/employer-model';
@@ -16,6 +16,7 @@ import createToken from '../../middleware/create-token';
 import { getUserDetailService } from '../services/getUsersDetail-service';
 import MediaModel from '../../models/media-model';
 import { uploadFileService } from '../services/uploadFileService-service';
+import { searchQueryService } from '../services/searchQuery-service';
 
 interface Ikey {
     email: string,
@@ -37,13 +38,15 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
         const user = await UserModel.create(userDetails);
 
         if (role === 'job_seeker') {
-            await JobSeekerModel.create({
+            const job = await JobSeekerModel.create({
                 user: user._id
             });
+            console.log(job)
         } else if (role === 'employer') {
-            await EmployerModel.create({
+            const emp = await EmployerModel.create({
                 user: user._id
             });
+            console.log(emp)
         }
 
         const session = await UserSessionModel.create({
@@ -213,6 +216,7 @@ const searchQueryHandler = async (req: CustomRequest, res: Response): Promise<vo
         const { search } = req.query as { search: string }
 
         const data = await searchQueryService(role, search)
+        res.status(200).json({data})
     } catch (error) {
         res.status(200).json({data: error.message})
     }
