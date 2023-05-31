@@ -5,7 +5,6 @@ import http from 'http';
 import { ROUTER } from './routes';
 const app = express();
 
-
 mongoose
   .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
   .then(() => {
