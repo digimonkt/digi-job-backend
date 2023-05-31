@@ -1,4 +1,4 @@
-import { CustomRequest, Response } from 'express';
+import { Response } from 'express';
 
 import EmployerProfileModel from '../../models/employerProfile-model';
 import JobDetailsModel, { status }  from '../../models/jobDetails-model';
@@ -6,14 +6,11 @@ import JobAttachmentsItemModel from '../../models/JobAttachmentsItem-model';
 import MediaModel from '../../models/media-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
 
+import { CustomRequest } from '../../interfaces/interfaces';
+
 const getJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { employerId, search, limit, page } = req.query as {
-      employerId: string;
-      search: string;
-      limit: number;
-      page: number;
-    };
+    const { employerId, search, limit, page } = req.query
 
     let query = {};
 
@@ -115,8 +112,8 @@ const createJobHandler = async (req: CustomRequest, res: Response): Promise<void
       start_date,
     } = req.body;
 
-    const file_path = req.file.filename;
-    const media_type = req.file.mimetype;
+    const file_path = req.files.filename;
+    const media_type = req.files.mimetype;
 
     const media = await MediaModel.create({
       file_path,
@@ -273,8 +270,8 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
       license_id,
     } = req.body;
 
-    const file_path = req.file.filename;
-    const media_type = req.file.mimetype;
+    const file_path = req.files.filename;
+    const media_type = req.files.mimetype;
 
     const media = await MediaModel.create({
       file_path,

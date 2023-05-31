@@ -19,5 +19,6 @@ interface decodedToken {
 export interface CustomRequest extends Request {
     user?: decodedToken
     files: any
+    query: any
 }
 

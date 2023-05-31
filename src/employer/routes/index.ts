@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { getJobHandler, createJobHandler, updateJobHandler, updateJobStatusHandler, getJobAnalysisHandler, aboutMeHandler } from '../controllers/index'
 
-import upload from '../../middleware/upload';
+import upload from '../../middleware/multer';
 // import verifyToken from '../../middleware/verify-token'
 
 const router = Router();
