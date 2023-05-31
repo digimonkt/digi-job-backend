@@ -1,5 +1,5 @@
-import JobSeekerModel from "../../models/jobSeeker-model";
-import EmployerModel from "../../models/employer-model";
+import JobSeekerModel from "../../models/jobSeekerProfile-model";
+import EmployerModel from "../../models/employerProfile-model";
 enum model {
     job_seeker = 'job_seeker',
     employer = 'employer'
