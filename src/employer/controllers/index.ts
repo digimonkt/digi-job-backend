@@ -321,11 +321,3 @@ export {
     // updateTenderStatusHandler,
     aboutMeHandler
 }
-
-
-getJobHandler,
-    getJobAnalysisHandler,
-    createJobHandler,
-    updateJobHandler,
-    updateJobStatusHandler,
-    aboutMeHandler
