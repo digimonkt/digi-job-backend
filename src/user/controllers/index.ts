@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 
 import UserModel from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
-import JobSeekerModel from '../../models/jobSeeker-model';
-import EmployerModel from '../../models/employer-model';
+import JobSeekerModel from '../../models/jobSeekerProfile-model';
+import EmployerModel from '../../models/employerProfile-model';
 
 
 import { nodeMailFunc } from '../../utils/node-mailer'
