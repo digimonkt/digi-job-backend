@@ -1,0 +1,1 @@
+deleteSession and changePassword not tested
