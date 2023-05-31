@@ -1,5 +1,8 @@
-import { Request, Response } from 'express';
 
+import { NextFunction, Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+import { CustomRequest } from '../../interfaces/interfaces';
 import UserModel from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
 import JobSeekerModel from '../../models/jobSeeker-model';
@@ -8,9 +11,10 @@ import EmployerModel from '../../models/employer-model';
 
 import { nodeMailFunc } from '../../utils/node-mailer'
 import bcrypt from 'bcrypt';
-import verifyToken from '../../middleware/verify-token';
 import jsonwebtoken from 'jsonwebtoken';
 import createToken from '../../middleware/create-token';
+import { getUserDetailService } from '../services/getUsersDetail-service';
+import MediaModel from '../../models/media-model';
 
 interface Ikey {
     email: string,
@@ -63,7 +67,7 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 
-const createSession = async (req: Request, res: Response): Promise<void> => {
+const createSession = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email, password, role, mobile } = req.body
         console.log(req.body)
@@ -105,7 +109,7 @@ const createSession = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+const forgotPassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email } = req.query as { email: string }
         if (!(email)) {
@@ -113,26 +117,26 @@ const forgotPassword = async (req: Request, res: Response): Promise<void> => {
         }
         const user = await UserModel.findOne({ email });
         if (!user) {
-            res.status(400).json({ body: { message: "User not found" } });
+            res.status(400).json({ body: { message: "Reset link sent to if email exit" } });
             return;
         }
         const JWT_TOKEN = createToken(email);
         const link = 'http://localhost:1337' + '/change-password/' + JWT_TOKEN;
         nodeMailFunc(email, link);
-        res.status(400).json({ body: { message: `Reset link sent to ${email}` } });
+        res.status(400).json({ body: { message: "Reset link sent to if email exit" } });
     } catch (error) {
         res.status(500).json({ body: { message: "Enter email" } });
     }
 }
 
-const changePassword = async (req: Request, res: Response): Promise<void> => {
+const changePassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { password } = req.body
 
         if (!(password)) {
             res.status(400).json({ body: { message: "Enter password" } });
         }
-        const { token } = req.params as {token: string}
+        const { token } = req.params as { token: string }
         const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY)
         const user = await UserModel.findOne({ email: decodedToken });
         user.password = password;
@@ -145,11 +149,12 @@ const changePassword = async (req: Request, res: Response): Promise<void> => {
 }
 
 
-const deleteSession = async (req: Request, res: Response): Promise<void> => {
+const deleteSession = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
 
         const token = req.headers['x-access-token']
         const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY);
+        const uesr = req.user
         console.log(decodedToken)
         const sessionId = decodedToken._id;
 
@@ -165,31 +170,45 @@ const deleteSession = async (req: Request, res: Response): Promise<void> => {
         session.expire_at = new Date(Date.now())
         await session.save();
 
-        // Blacklist token
-        // You can store the blacklisted token in a database or cache
-        // and check it on subsequent requests to ensure that the token is not reused
-
         res.status(200).json({ body: { message: 'User logged out successfully' } })
     } catch (error) {
         res.status(500).json({ body: { message: "Logging Out unsuccessfull" } })
     }
 }
 
-// const getUserDetail = async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         let userId = req.params.userId as string
-//         if(userId === null) {
-//             const { token } = req.params as { token: string | null };
-//             const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY);
-//             const session = await UserSessionModel.findById(decodedToken._id);
-//             userId = session?.user.toString() as string;
-//         }
-//         const user = await UserModel.findById(userId);
-        
-//     } catch (error) {
+const getUserDetailHandler = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.params.userId as string
+        const token = req.headers['x-access-token'] as string
+        const user = await getUserDetailService(userId, token)
+        console.log(user)
+        res.status(200).json({ body: { data: user } })
+    } catch (error) {
+        res.status
+    }
+}
 
-//     }
-// }
+const updateProfileImageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const sessionId = req.user._id; // Assuming you have the user ID available
+        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
+        const userId = IUserSessionDocument.user
+
+        const file_path = req.file?.filename
+        const media_type = req.file?.mimetype
+
+        // Set the file path where you want to save the uploaded photo
+        const media = await MediaModel.create({
+            media_type,
+            file_path: 'images/' + file_path
+        })
+        await UserModel.findByIdAndUpdate(userId, { display_image: media._id }, { new: true })
+        res.status(200).json({ body: { message: "Profile image updated successfully" } })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ body: { message: "Profile image updated unsuccessfully" } })
+    }
+}
 
 export {
     createUser,
@@ -197,5 +216,6 @@ export {
     forgotPassword,
     changePassword,
     deleteSession,
-    getUserDetail
+    getUserDetailHandler,
+    updateProfileImageHandler
 }

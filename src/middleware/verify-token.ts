@@ -1,20 +1,20 @@
+import { NextFunction, Response } from 'express';
 import jsonwebtoken from 'jsonwebtoken';
+import { CustomRequest } from '../interfaces/interfaces';
 
-const verifyToken = async (req, res, next) => {
-    const token = req.params.token || req.headers['x-access-token']
-    console.log(token)
-    if (!token) return res.status(401).json({ status: "error", message: "Access Denied" });
-    try {
-        const verified = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY);
-        console.log(verified);
-        req.user = verified;
-        next();
-    } catch (error) {
-        res.status(400).json({
-            status: "error",
-            message: "Invalid Token"
-        });
-    }
-}
+export const verifyToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  const accessToken = req.headers['x-access-token'] as string;
+  const refreshToken = req.headers['x-refresh-token'] as string;
+  if (accessToken) {
+    const verified = jsonwebtoken.verify(accessToken, process.env.TOKEN_HEADER_KEY);
+    req.user = verified;
+    next();
+  } else if (refreshToken) {
+    const verified = jsonwebtoken.verify(refreshToken, process.env.TOKEN_HEADER_KEY);
+    req.user = verified;
+    next();
+  } else {
+    return res.status(401).json({ status: "error", message: "Access Denied" });
+  }
+};
 
-export default verifyToken;
