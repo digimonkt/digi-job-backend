@@ -5,8 +5,8 @@ import path from 'path';
 import { CustomRequest } from '../../interfaces/interfaces';
 import UserModel, { profile_role } from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
-import JobSeekerModel from '../../models/jobSeeker-model';
-import EmployerModel from '../../models/employer-model';
+import JobSeekerModel from '../../models/jobSeekerProfile-model';
+import EmployerModel from '../../models/employerProfile-model';
 
 
 import { nodeMailFunc } from '../../utils/node-mailer'

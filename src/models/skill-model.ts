@@ -7,10 +7,9 @@ export interface ISkillDocument extends ISkill, Document {
     updatedAt: Date;
 }
 
-
 const SkillSchema: Schema = new Schema({
     skill: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-});
+}, { timestamps: true });
 
 export default mongoose.model<ISkillDocument>('Skill', SkillSchema);

@@ -1,4 +1,5 @@
 import userRoute from './user/routes/index'
+import employerRoute from './employer/routes/index'
 
 export const ROUTER = [
     {
@@ -6,7 +7,7 @@ export const ROUTER = [
         router: userRoute
     },
     {
-        path: '/user/forget-password',
-        router: userRoute
+        path: '/user/employer',
+        router: employerRoute
     }
 ]
