@@ -1,11 +1,8 @@
 
 import { Response } from 'express';
 import { CustomRequest, decodedToken } from '../../interfaces/interfaces';
-import UserModel from '../../models/user-model';
+import UserModel, { IUserDocument } from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
-import JobSeekerModel from '../../models/jobSeekerProfile-model';
-import EmployerModel from '../../models/employerProfile-model';
-import { IUserDocument } from '../../models/user-model';
 
 
 import { nodeMailFunc } from '../../utils/node-mailer'
@@ -16,48 +13,20 @@ import { getUserDetailService } from '../services/getUsersDetail-service';
 import { uploadFileService } from '../services/uploadFileService-service';
 import { searchQueryService } from '../services/searchQuery-service';
 import { createSessionService } from '../services/createSession-service';
+import { sendOTPService } from '../services/sentOTP-service';
+import { OTPVerificationService } from '../services/verifyOTP-service';
+import { createUserService } from '../services/createUser-service';
+import { authSchema, querySchema, verificationSchema } from '../../utils/validators';
 
-
-const createUser = async (req: CustomRequest, res: Response): Promise<void> => {
+const createUserHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email, password, role, mobile_number, country_code } = req.body;
-
-        const userDetails = {
-            email,
-            password,
-            profile_role: role,
-            mobile_number,
-            country_code
-        };
-
-        const user = await UserModel.create(userDetails);
-
-        if (role === 'job_seeker') {
-            const job = await JobSeekerModel.create({
-                user: user._id
-            });
-            console.log(job)
-        } else if (role === 'employer') {
-            const emp = await EmployerModel.create({
-                user: user._id
-            });
-            console.log(emp)
-        }
-
-        const session = await UserSessionModel.create({
-            user: user._id,
-            ip_address: req.socket.remoteAddress,
-            agent: req.get('User-Agent'),
-            active: true
-        });
-
-        const JWT_TOKEN = createToken(session._id);
-
+        await authSchema.validateAsync(req.body);
+        const { JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH } = await createUserService(email, password, role, mobile_number, country_code, req);
         res.set({
-            'x-access': JWT_TOKEN,
-            'x-refresh': JWT_TOKEN
+            'x-access': JWT_TOKEN_ACCESS,
+            'x-refresh': JWT_TOKEN_REFRESH
         });
-
         res.status(201).json({ body: { message: "User Created Successfully" } });
 
     } catch (error) {
@@ -69,7 +38,7 @@ const createUser = async (req: CustomRequest, res: Response): Promise<void> => {
 const createSessionHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email, password, role, mobile } = req.body
-        console.log(req.body)
+        await authSchema.validateAsync(req.body);
         // apply for 
         // const user = await UserModel.findOne({ $or: [ {email: key.email}, {mobile_number: key.mobile } ]});
         let user : IUserDocument
@@ -84,8 +53,8 @@ const createSessionHandler = async (req: CustomRequest, res: Response): Promise<
         if (user !== null && await bcrypt.compare(password, user.password) && user.profile_role === role) {
             const {JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH} = await createSessionService(user._id, req)
             res.set({
-                'x-access-token': JWT_TOKEN_ACCESS,
-                'x-refresh-token': JWT_TOKEN_REFRESH
+                'x-access': JWT_TOKEN_ACCESS,
+                'x-refresh': JWT_TOKEN_REFRESH
             });
             res.status(201).json({ body: { message: "User LoggedIn Successfully" } })
         } else {
@@ -101,28 +70,33 @@ const createSessionHandler = async (req: CustomRequest, res: Response): Promise<
 const forgotPassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email } = req.query as { email: string }
+        await querySchema.validateAsync({email});
         if (!(email)) {
             res.status(400).json({ body: { message: "Enter email" } });
+            return
         }
         const user = await UserModel.findOne({ email });
         if (!user) {
-            res.status(400).json({ body: { message: "Reset link sent to if email exit" } });
+            res.status(400).json({ body: { message: "Reset link sent to if email exist" } });
             return;
         }
         const JWT_TOKEN = createToken(email);
         const link = 'http://localhost:1337' + '/change-password/' + JWT_TOKEN;
-        nodeMailFunc(email, link);
-        res.status(400).json({ body: { message: "Reset link sent to if email exit" } });
+        const subject = 'Reset Password';
+        const text = 'Reset Password'+link;
+        nodeMailFunc(email, subject, text);
+        res.status(400).json({ body: { message: "Reset link sent to if email exist" } });
     } catch (error) {
         res.status(500).json({ body: { message: "Enter email" } });
     }
 }
 
-const changePassword = async (req: CustomRequest, res: Response): Promise<void> => {
+const changePasswordHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { password } = req.body as { password: string }   
         if (!(password)) {
             res.status(400).json({ body: { message: "Enter password" } });
+            return
         }
         const { token } = req.params as { token: string }
         const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY) as decodedToken
@@ -137,7 +111,7 @@ const changePassword = async (req: CustomRequest, res: Response): Promise<void> 
 }
 
 
-const deleteSession = async (req: CustomRequest, res: Response): Promise<void> => {
+const deleteSessionHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         
         // Find session document by ID
@@ -175,7 +149,7 @@ const updateProfileImageHandler = async (req: CustomRequest, res: Response): Pro
         const sessionId = req.user._id; // Assuming you have the user ID available
         const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
         if(!IUserSessionDocument.active) {
-            res.status(400).json({ body: { message: "Not Authorized" } })
+            res.status(400).json({ body: { message: "Not Authenticated" } })
             return;
         }
         const userId = IUserSessionDocument.user.toString()
@@ -196,21 +170,60 @@ const searchQueryHandler = async (req: CustomRequest, res: Response): Promise<vo
     try {
         const { role } = req.params as { role: "employer" | "job_seeker"}
         const { search } = req.query as { search: string }
-
+        const sessionId = req.user._id; // Assuming you have the user ID available
+        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
+        if(!IUserSessionDocument.active) {
+            res.status(400).json({ body: { message: "Not Authenticated" } })
+            return;
+        }
         const data = await searchQueryService(role, search)
         res.status(200).json({data})
     } catch (error) {
-        res.status(200).json({data: error.message})
+        res.status(200).json( { data: error.message })
+    }
+}
+
+const sendOTPHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const { email } = req.params as { email: string }
+        await verificationSchema.validateAsync({ email })
+        if (!(email)) {
+            res.status(400).json({ body: { message: "Enter email" } })
+            return
+        }
+        const results = await sendOTPService(email)
+        res.status(400).json({ body: { message: results.message, token: results.token } })
+    } catch (error) {
+        res.status(500).json({ body: { message: error.message } })
+    }
+}
+
+const OTPVerificationHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const { token } = req.query as { token: string }
+        const { otp } = req.params as { otp: string }
+        await verificationSchema.validateAsync({ otp })
+        if (!(otp)) {
+            res.status(400).json({ body: { message: "Enter valid OTP" } })
+            return
+        }
+        const verifyToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY) as decodedToken
+        const results = await OTPVerificationService(verifyToken._id, otp, req)
+        res.status(400).json({ body: { token: results.JWT_TOKEN_ACCESS } })
+    } catch (error) {
+        res.status(500).json({ body: { message: error.message } })
     }
 }
 
 export {
-    createUser,
+    createUserHandler,
     createSessionHandler,
     forgotPassword,
-    changePassword,
-    deleteSession,
+    changePasswordHandler,
+    deleteSessionHandler,
     getUserDetailHandler,
     updateProfileImageHandler,
-    searchQueryHandler
+    searchQueryHandler,
+    sendOTPHandler,
+    OTPVerificationHandler
 }

@@ -7,17 +7,16 @@ enum model {
 
 export const searchQueryService = async (role: string, search: string) => {
     let data;
-    if(!search){
-        if (role === model.job_seeker) {
-            data = await JobSeekerModel.find()
-              .populate('user', 'id role name email country_code mobile_number is_active')
-              .select('user');
-          } else if (role === model.employer) {
-            data = await EmployerModel.find()
-              .populate('user', 'id role name email country_code mobile_number is_active')
-              .select('user');
-          }
+    if (role === model.job_seeker) {
+        data = await JobSeekerModel.find()
+          .populate('user', 'id role name email country_code mobile_number is_active')
+          .select('user');
+    } else if (role === model.employer) {
+        data = await EmployerModel.find()
+        .populate('user', 'id role name email country_code mobile_number is_active')
+        .select('user');
     }
+
     const results = {
         count: data.length,
         next: null,
