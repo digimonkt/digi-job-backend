@@ -31,7 +31,7 @@ const JobSeekerSchema: Schema = new Schema({
         type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true
     },
     gender: { 
-        type: String, required: false, unique: true 
+        type: String, required: false 
     },
     dob: { 
         type: Date
