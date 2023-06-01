@@ -41,17 +41,16 @@ const createSessionHandler = async (req: CustomRequest, res: Response): Promise<
         await authSchema.validateAsync(req.body);
         // apply for 
         // const user = await UserModel.findOne({ $or: [ {email: key.email}, {mobile_number: key.mobile } ]});
-        let user : IUserDocument
+        let user: IUserDocument
         if (email) {
             user = await UserModel.findOne({ email })
         } else if (mobile) {
             user = await UserModel.findOne({ mobile_number: mobile })
         } else {
             res.status(400).json({ body: { message: "Enter credentials" } })
-            return
         }
         if (user !== null && await bcrypt.compare(password, user.password) && user.profile_role === role) {
-            const {JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH} = await createSessionService(user._id, req)
+            const { JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH } = await createSessionService(user._id, req)
             res.set({
                 'x-access': JWT_TOKEN_ACCESS,
                 'x-refresh': JWT_TOKEN_REFRESH
@@ -70,20 +69,20 @@ const createSessionHandler = async (req: CustomRequest, res: Response): Promise<
 const forgotPassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email } = req.query as { email: string }
-        await querySchema.validateAsync({email});
+        await querySchema.validateAsync({ email });
         if (!(email)) {
             res.status(400).json({ body: { message: "Enter email" } });
             return
         }
         const user = await UserModel.findOne({ email });
         if (!user) {
-            res.status(400).json({ body: { message: "Reset link sent to if email exist" } });
-            return;
+            res.status(400).json({ body: { message: "Reset link sent to if email exist" } })
+            return
         }
         const JWT_TOKEN = createToken(email);
         const link = 'http://localhost:1337' + '/change-password/' + JWT_TOKEN;
         const subject = 'Reset Password';
-        const text = 'Reset Password'+link;
+        const text = 'Reset Password' + link;
         nodeMailFunc(email, subject, text);
         res.status(400).json({ body: { message: "Reset link sent to if email exist" } });
     } catch (error) {
@@ -93,9 +92,9 @@ const forgotPassword = async (req: CustomRequest, res: Response): Promise<void> 
 
 const changePasswordHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const { password } = req.body as { password: string }   
+        const { password } = req.body as { password: string }
         if (!(password)) {
-            res.status(400).json({ body: { message: "Enter password" } });
+            res.status(400).json({ body: { message: "Enter password" } })
             return
         }
         const { token } = req.params as { token: string }
@@ -113,14 +112,14 @@ const changePasswordHandler = async (req: CustomRequest, res: Response): Promise
 
 const deleteSessionHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        
+
         // Find session document by ID
-        const sessionId = req.user._id; // Assuming you have the user ID available
+        const sessionId = req.sessionId // Assuming you have the user ID available
         const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
 
-        if(!IUserSessionDocument.active) {
-            res.status(400).json({ body: { message: "User already logged out" } })
-            return 
+        if (!IUserSessionDocument.active) {
+            res.status(400).json({ body: { message: "Invalid Session" } })
+            return
         }
         // how to expire jwt token
         IUserSessionDocument.active = false;
@@ -129,37 +128,32 @@ const deleteSessionHandler = async (req: CustomRequest, res: Response): Promise<
 
         res.status(200).json({ body: { message: 'User logged out successfully' } })
     } catch (error) {
-        res.status(500).json({ body: { message: "Logging Out unsuccessfull" } })
+        res.status(500).json({ body: { message: error.message } })
     }
 }
 
 const getUserDetailHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const userId = req.params.userId as string
-        const sessionId: string | undefined = req.user?._id; // Assuming you have the user ID available
-        const user = await getUserDetailService(userId, sessionId)
-        res.status(200).json({ body: { data: user } })
+        const userId = req.user._id;
+        const user = await getUserDetailService(userId);
+        res.status(200).json(user);
     } catch (error) {
-        res.status
+        res.status(500).json({ error });
     }
-}
+};
+
 
 const updateProfileImageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const sessionId = req.user._id; // Assuming you have the user ID available
-        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
-        if(!IUserSessionDocument.active) {
-            res.status(400).json({ body: { message: "Not Authenticated" } })
-            return;
-        }
-        const userId = IUserSessionDocument.user.toString()
+
+        const userId = req.user?._id as string
 
         const file_path = req.file?.filename
         const media_type = req.file?.mimetype
 
         // Set the file path where you want to save the uploaded photo
         await uploadFileService(userId, file_path, media_type)
-        
+
         res.status(200).json({ data: { path: `images/${file_path}` } })
     } catch (error) {
         res.status(500).json({ data: { path: '' } })
@@ -168,18 +162,12 @@ const updateProfileImageHandler = async (req: CustomRequest, res: Response): Pro
 
 const searchQueryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const { role } = req.params as { role: "employer" | "job_seeker"}
+        const { role } = req.params as { role: "employer" | "job_seeker" }
         const { search } = req.query as { search: string }
-        const sessionId = req.user._id; // Assuming you have the user ID available
-        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
-        if(!IUserSessionDocument.active) {
-            res.status(400).json({ body: { message: "Not Authenticated" } })
-            return;
-        }
         const data = await searchQueryService(role, search)
-        res.status(200).json({data})
+        res.status(200).json({ data })
     } catch (error) {
-        res.status(200).json( { data: error.message })
+        res.status(400).json({ data: error.message })
     }
 }
 

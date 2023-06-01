@@ -27,8 +27,6 @@ const getJobHandler = async (req: CustomRequest, res: Response): Promise<void> =
       };
     }
 
-    const totalJobs = await JobDetailsModel.countDocuments(query);
-
     let jobs = JobDetailsModel.find(query);
 
     if (limit && page) {
@@ -41,7 +39,7 @@ const getJobHandler = async (req: CustomRequest, res: Response): Promise<void> =
     const response = {
       code: 200,
       data: filteredJobs,
-      total: totalJobs,
+      total: filteredJobs.length,
     };
 
     res.json(response);
@@ -96,9 +94,6 @@ const createJobHandler = async (req: CustomRequest, res: Response): Promise<void
       budget_amount,
       budget_pay_period,
       description,
-      country,
-      city,
-      address,
       job_category,
       is_full_time,
       is_part_time,
@@ -114,6 +109,7 @@ const createJobHandler = async (req: CustomRequest, res: Response): Promise<void
       deadline,
       start_date,
     } = req.body;
+    
     await createJobSchema.validateAsync(req.body)
     const file_path = req.files.filename;
     const media_type = req.files.mimetype;
@@ -129,9 +125,6 @@ const createJobHandler = async (req: CustomRequest, res: Response): Promise<void
       budget_amount,
       budget_pay_period,
       description,
-      country,
-      city,
-      address,
       job_category,
       is_full_time,
       is_part_time,
@@ -260,9 +253,7 @@ const updateJobStatusHandler = async (req: CustomRequest, res: Response): Promis
 
 const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const sessionId = req.user._id; // Assuming you have the user ID available
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-    const employerId = IUserSessionDocument.user.toString()
+    const employerId = req.user._id; // Assuming you have the user ID available
 
     const {
       organization_name,
@@ -273,6 +264,7 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
       other_notification,
       license_id,
     } = req.body;
+
     await aboutMeSchema.validateAsync(req.body)
     const file_path = req.files.filename;
     const media_type = req.files.mimetype;
@@ -301,7 +293,6 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
     if (!employer) {
       res.status(404).json({ error: 'EmployerProfileModel not found' });
     }
-
     res.json({ code: 200, data: { message: 'Updated Successfully' } });
   } catch (error) {
     console.error('Error while updating employer about:', error);
@@ -311,13 +302,9 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
 
 export {
     getJobHandler,
-    // getTendersHandler,
-    // getActivityHandler,
     getJobAnalysisHandler,
     createJobHandler,
-    // createTenderHandler,
     updateJobHandler,
-    // updateTenderHandler,
     updateJobStatusHandler,
     aboutMeHandler
 }

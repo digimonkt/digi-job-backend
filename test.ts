@@ -1,0 +1,25 @@
+{
+    "title": "Senior Software Developer",
+    "budget_currency": "USD",
+    "budget_amount": 2000,
+    "budget_pay_period": "yearly",
+    "description": "This is the job description...",
+    "country": "${countryId}",
+    "city": "${cityId}",
+    "address": "Gwalior, Madhya Pradesh",
+    "job_category": ["${jobCategoryId}"],
+    "is_full_time": true,
+    "is_part_time": false,
+    "has_contract": false,
+    "contact_email": "saral.shrivastava@digimonk.in",
+    "contact_phone": null,
+    "contact_whatsapp": null,
+    "highest_education": "${educationLevelId}",
+    "language": [{"language":"${languageId}","spoken":"fluent","written":"conversational"}],
+    "skill": ["${skillId}"],
+    "duration": 20,
+    "experience": 3,
+    "attachments": [File],
+    "deadline": "YYYY-MM-DD"
+    "start_date": "YYYY-MM-DD"
+  }

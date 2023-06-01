@@ -8,7 +8,7 @@ const router = Router();
 
 router.get('/job', postVerify,getJobHandler)
 router.get('/job-analysis', postVerify,getJobAnalysisHandler)
-router.post('/job/', postVerify ,upload, createJobHandler) 
+router.post('/job', postVerify ,upload, createJobHandler) 
 router.put('jobs/:jobId', postVerify ,updateJobHandler)
 router.put('/jobs/:jobId/status', postVerify, updateJobStatusHandler)
 router.patch('/about-me', postVerify, aboutMeHandler)
