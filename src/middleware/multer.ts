@@ -43,3 +43,5 @@ const upload = multer({
 });
 
 export default upload.single('image');
+export const uploadFiles = upload.array('File', 10);
+export const uploadFile = upload.single('File');
