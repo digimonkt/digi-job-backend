@@ -1,22 +1,22 @@
-import express, { Request, Response } from 'express';
 import upload from '../../middleware/multer';
+import express from 'express'
 import {
   aboutMeHandler,
   addEducationHandler,
   updateEducationHandler,
   deleteEducationHandler,
-  addWorkExperienceHandler,
-  updateWorkExperienceHandler,
-  deleteWorkExperienceHandler,
-  addLanguageHandler,
+  // addWorkExperienceHandler,
+  // updateWorkExperienceHandler,
+  // deleteWorkExperienceHandler,
+  // addLanguageHandler,
   updateLanguageHandler,
   deleteLanguageHandler,
   addSkillHandler,
-  getAppliedJobsHandler,
-  applyJobHandler,
-  saveJobHandler,
-  getSavedJobsHandler,
-  deleteSavedJobHandler,
+  // getAppliedJobsHandler,
+  // applyJobHandler,
+  // saveJobHandler,
+  // getSavedJobsHandler,
+  // deleteSavedJobHandler,
 } from '../controllers/index';
 
 const router = express.Router();
@@ -30,12 +30,12 @@ router.patch('/educations/:educationId', updateEducationHandler);
 router.delete('/educations/:educationId', deleteEducationHandler);
 
 // Experience routes
-router.post('/work-experiences', addWorkExperienceHandler);
-router.patch('/work-experiences/:workExperienceId', updateWorkExperienceHandler);
-router.delete('/work-Experience/:workExperienceId', deleteWorkExperienceHandler);
+// router.post('/work-experiences', addWorkExperienceHandler);
+// router.patch('/work-experiences/:workExperienceId', updateWorkExperienceHandler);
+// router.delete('/work-Experience/:workExperienceId', deleteWorkExperienceHandler);
 
-// Language routes
-router.post('/language', addLanguageHandler);
+// // Language routes
+// router.post('/language', addLanguageHandler);
 router.patch('/languages/:languageId', updateLanguageHandler);
 router.delete('/languages/:languageId', deleteLanguageHandler);
 
@@ -43,13 +43,13 @@ router.delete('/languages/:languageId', deleteLanguageHandler);
 router.post('/skills', addSkillHandler);
 
 // Job application routes
-router.get('/jobs/apply', getAppliedJobsHandler);
-router.post('/jobs/apply/:jobId', applyJobHandler);
+// router.get('/jobs/apply', getAppliedJobsHandler);
+// router.post('/jobs/apply/:jobId', applyJobHandler);
 
-// Saved jobs routes
-router.post('/jobs/save/:jobId', saveJobHandler);
-router.get('/jobs/save', getSavedJobsHandler);
-router.delete('/jobs/save/:jobId', deleteSavedJobHandler);
+// // Saved jobs routes
+// router.post('/jobs/save/:jobId', saveJobHandler);
+// router.get('/jobs/save', getSavedJobsHandler);
+// router.delete('/jobs/save/:jobId', deleteSavedJobHandler);
 
 
 

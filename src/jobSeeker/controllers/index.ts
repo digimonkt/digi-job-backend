@@ -1,18 +1,11 @@
 import { Response } from 'express';
 import { CustomRequest } from '../../interfaces/interfaces';
 
-import SavedJobModel from '../../models/savedJob-model';
-import AppliedJobModel from '../../models/appliedJob-model';
-import JobDetailsModel from '../../models/jobDetails-model';
-import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
-import UserModel from '../../models/user-model';
 import JobSeekerProfileModel from '../../models/jobSeekerProfile-model';
 import EducationRecordModel from '../../models/educationRecord-model';
-import JobSeekerLanguageModel from '../../models/jobSeekerLanguageProficiency-model';
-
 
 import { IeducationRecord } from '../../models/educationRecord-model';
-import { IjobSeekerLanguageProficiency } from '../../models/jobSeekerLanguageProficiency-model';
+import JobSeekerLanguageProficiencyModel from '../../models/JobSeekerLanguageProficiency-model'; 
 import JobSeekerSkillModel from '../../models/jobSeekerSkill-model';
 import { IJobSeekerSkill } from '../../models/jobSeekerSkill-model';
 
@@ -28,9 +21,7 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
       job_notification,
       highest_education,
     } = req.body;
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-    const userId = IUserSessionDocument.user.toString()
+    const userId = req.user._id.toString()
 
     JobSeekerProfileModel.findByIdAndUpdate(userId
       , {
@@ -52,8 +43,9 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
 
 const addEducationHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
+    // Extract the data from the request body
+    
+    const userId = req.user._id.toString()
 
     const { title, start_date, end_date, institute, organization, description, } = req.body;
 
@@ -64,7 +56,7 @@ const addEducationHandler = async (req: CustomRequest, res: Response): Promise<v
       institute,
       organization,
       description,
-      user: IUserSessionDocument.user,
+      user: userId,
     };
 
     // Save the new education to the database
@@ -80,10 +72,7 @@ const addEducationHandler = async (req: CustomRequest, res: Response): Promise<v
 const updateEducationHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     // Extract the education ID from the request parameters
-    
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-    
+       
     const { educationId } = req.params;
     const { title, start_date, end_date, institute, organization, description, } = req.body;
 
@@ -107,9 +96,6 @@ const deleteEducationHandler = async (req: CustomRequest, res: Response): Promis
   try {
     // Extract the education ID from the request parameters
     const { educationId } = req.params;
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-
     EducationRecordModel.findByIdAndDelete(educationId);
     res.status(200).json({ message: 'Deleted Successfully' });
   } catch (error) {
@@ -120,10 +106,7 @@ const deleteEducationHandler = async (req: CustomRequest, res: Response): Promis
 
 
 const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  try {
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-  
+  try { 
     const { languageId } = req.params;
     const { written, spoken } = req.body;
 
@@ -136,7 +119,7 @@ const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise
     }
 
     // Update the language record using findByIdAndUpdate
-    await JobSeekerLanguageModel.findByIdAndUpdate(languageId, updatedFields);
+    await JobSeekerLanguageProficiencyModel.findByIdAndUpdate(languageId, updatedFields);
 
     res.status(200).json({ message: 'Updated Successfully' });
   } catch (error) {
@@ -147,14 +130,11 @@ const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise
 
 
 const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  try {
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
-    
+  try {    
     const { languageId } = req.params;
 
     // Delete the language record using findByIdAndDelete
-    await JobSeekerLanguageModel.findByIdAndDelete(languageId);
+    await JobSeekerLanguageProficiencyModel.findByIdAndDelete(languageId);
 
     res.status(200).json({ message: 'Deleted Successfully' });
   } catch (error) {
@@ -179,19 +159,18 @@ const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise
 const addSkillHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { skill_remove, skill_add } = req.body;
-    const sessionId = req.user._id; 
-    const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
+    const userId = req.user._id.toString()
 
     // Remove skills
     if (skill_remove && skill_remove.length > 0) {
-      await JobSeekerSkillModel.deleteMany({ _id: { $in: skill_remove }, user: IUserSessionDocument.user });
+      await JobSeekerSkillModel.deleteMany({ _id: { $in: skill_remove }, user: userId });
     }
 
     // Add skills
     if (skill_add && skill_add.length > 0) {
       const newSkills: IJobSeekerSkill[] = skill_add.map((skill: string) => ({
         skill,
-        user: IUserSessionDocument.user,
+        user: userId,
       }));
 
       await JobSeekerSkillModel.create(newSkills);
@@ -205,26 +184,26 @@ const addSkillHandler = async (req: CustomRequest, res: Response): Promise<void>
 };
 
 
-const applyJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+// const applyJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   
-};
+// };
 
-const getAppliedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+// const getAppliedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   
-};
+// };
 
 
-const saveJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+// const saveJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   
-};
+// };
 
-const getSavedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+// const getSavedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   
-};
+// };
 
-const deleteSavedJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+// const deleteSavedJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   
-};
+// };
 
 export {
   aboutMeHandler,
@@ -238,9 +217,9 @@ export {
   updateLanguageHandler,
   deleteLanguageHandler,
   addSkillHandler,
-  getAppliedJobsHandler,
-  applyJobHandler,
-  saveJobHandler,
-  getSavedJobsHandler,
-  deleteSavedJobHandler,
+  // getAppliedJobsHandler,
+  // applyJobHandler,
+  // saveJobHandler,
+  // getSavedJobsHandler,
+  // deleteSavedJobHandler,
 }
