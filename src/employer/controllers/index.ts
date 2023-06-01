@@ -7,10 +7,12 @@ import MediaModel from '../../models/media-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
 
 import { CustomRequest } from '../../interfaces/interfaces';
+import { aboutMeSchema, createJobSchema, searchSchema } from '../../utils/employer-validators';
 
 const getJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { employerId, search, limit, page } = req.query
+    await searchSchema.validateAsync({ employerId, search, limit, page });
 
     let query = {};
 
@@ -51,6 +53,7 @@ const getJobHandler = async (req: CustomRequest, res: Response): Promise<void> =
 
 const getJobAnalysisHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
+
     // Perform job analysis query to get the count of jobs per month
     const jobAnalysis = await JobDetailsModel.aggregate([
       {
@@ -111,7 +114,7 @@ const createJobHandler = async (req: CustomRequest, res: Response): Promise<void
       deadline,
       start_date,
     } = req.body;
-
+    await createJobSchema.validateAsync(req.body)
     const file_path = req.files.filename;
     const media_type = req.files.mimetype;
 
@@ -186,7 +189,7 @@ const updateJobHandler = async (req: CustomRequest, res: Response): Promise<void
       deadline,
       start_date,
     } = req.body;
-
+    await createJobSchema.validateAsync(req.body)
     // Find the job in the database and update its fields
     const job = await JobDetailsModel.findByIdAndUpdate(
       jobId,
@@ -237,6 +240,7 @@ const updateJobStatusHandler = async (req: CustomRequest, res: Response): Promis
 
     if (!job) {
       res.status(404).json({ error: 'Job not found' });
+      return;
     }
 
     // Toggle the status of the job
@@ -269,7 +273,7 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
       other_notification,
       license_id,
     } = req.body;
-
+    await aboutMeSchema.validateAsync(req.body)
     const file_path = req.files.filename;
     const media_type = req.files.mimetype;
 
@@ -315,6 +319,5 @@ export {
     updateJobHandler,
     // updateTenderHandler,
     updateJobStatusHandler,
-    // updateTenderStatusHandler,
     aboutMeHandler
 }
