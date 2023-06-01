@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface IJobSeekerSkill extends Document {
+export interface IJobSeekerSkill extends Document {
   skill: mongoose.Schema.Types.ObjectId;
   user: mongoose.Schema.Types.ObjectId;
 }
