@@ -3,6 +3,8 @@ import mongoose from 'mongoose'
 import { config } from './config/config'
 import http from 'http';
 import { ROUTER } from './routes';
+import { verifyToken } from './middleware/verify-token';
+
 const app = express();
 
 mongoose
@@ -36,6 +38,7 @@ const serverConfig = () => {
     }
     next();
   })
+  app.use(verifyToken)
 
   app.use('/ping', (req, res) => {
     return res.status(200).json({ message: 'pong' });

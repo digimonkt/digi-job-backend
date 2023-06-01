@@ -1,29 +1,24 @@
 
-import { NextFunction, Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
-import { CustomRequest } from '../../interfaces/interfaces';
-import UserModel, { profile_role } from '../../models/user-model';
+import { Response } from 'express';
+import { CustomRequest, decodedToken } from '../../interfaces/interfaces';
+import UserModel from '../../models/user-model';
 import UserSessionModel, { IUserSessionDocument } from '../../models/userSession-model';
 import JobSeekerModel from '../../models/jobSeekerProfile-model';
 import EmployerModel from '../../models/employerProfile-model';
+import { IUserDocument } from '../../models/user-model';
 
 
 import { nodeMailFunc } from '../../utils/node-mailer'
 import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
-import createToken from '../../middleware/create-token';
+import createToken from '../../middleware/create-refresh-token';
 import { getUserDetailService } from '../services/getUsersDetail-service';
-import MediaModel from '../../models/media-model';
 import { uploadFileService } from '../services/uploadFileService-service';
 import { searchQueryService } from '../services/searchQuery-service';
+import { createSessionService } from '../services/createSession-service';
 
-interface Ikey {
-    email: string,
-    mobile: string
-}
 
-const createUser = async (req: Request, res: Response): Promise<void> => {
+const createUser = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email, password, role, mobile_number, country_code } = req.body;
 
@@ -71,13 +66,13 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 
-const createSession = async (req: CustomRequest, res: Response): Promise<void> => {
+const createSessionHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { email, password, role, mobile } = req.body
         console.log(req.body)
         // apply for 
         // const user = await UserModel.findOne({ $or: [ {email: key.email}, {mobile_number: key.mobile } ]});
-        let user
+        let user : IUserDocument
         if (email) {
             user = await UserModel.findOne({ email })
         } else if (mobile) {
@@ -86,21 +81,11 @@ const createSession = async (req: CustomRequest, res: Response): Promise<void> =
             res.status(400).json({ body: { message: "Enter credentials" } })
             return
         }
-        console.log(user)
-        console.log(user !== null, await bcrypt.compare(password, user.password), user.profile_role === role)
         if (user !== null && await bcrypt.compare(password, user.password) && user.profile_role === role) {
-            // console.log(JWT_TOKEN)
-            console.log(user)
-            const session = await UserSessionModel.create({
-                user: user._id,
-                ip_address: req.socket.remoteAddress,
-                agent: req.get('User-Agent'),
-                active: true
-            })
-            const JWT_TOKEN = createToken(session._id);
+            const {JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH} = await createSessionService(user._id, req)
             res.set({
-                'x-access': JWT_TOKEN,
-                'x-refresh': JWT_TOKEN
+                'x-access-token': JWT_TOKEN_ACCESS,
+                'x-refresh-token': JWT_TOKEN_REFRESH
             });
             res.status(201).json({ body: { message: "User LoggedIn Successfully" } })
         } else {
@@ -135,13 +120,12 @@ const forgotPassword = async (req: CustomRequest, res: Response): Promise<void> 
 
 const changePassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const { password } = req.body
-
+        const { password } = req.body as { password: string }   
         if (!(password)) {
             res.status(400).json({ body: { message: "Enter password" } });
         }
         const { token } = req.params as { token: string }
-        const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY)
+        const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY) as decodedToken
         const user = await UserModel.findOne({ email: decodedToken });
         user.password = password;
         await user.save();
@@ -155,24 +139,19 @@ const changePassword = async (req: CustomRequest, res: Response): Promise<void> 
 
 const deleteSession = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-
-        const token = req.headers['x-access-token']
-        const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY);
-        const uesr = req.user
-        console.log(decodedToken)
-        const sessionId = decodedToken._id;
-
+        
         // Find session document by ID
-        const session: IUserSessionDocument | null = await UserSessionModel.findById(sessionId);
+        const sessionId = req.user._id; // Assuming you have the user ID available
+        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
 
-        if (!session) {
-            res.status(404).json({ body: { message: 'Session not found' } });
-            return;
+        if(!IUserSessionDocument.active) {
+            res.status(400).json({ body: { message: "User already logged out" } })
+            return 
         }
-
-        session.active = false;
-        session.expire_at = new Date(Date.now())
-        await session.save();
+        // how to expire jwt token
+        IUserSessionDocument.active = false;
+        IUserSessionDocument.expire_at = new Date(Date.now())
+        await IUserSessionDocument.save();
 
         res.status(200).json({ body: { message: 'User logged out successfully' } })
     } catch (error) {
@@ -180,12 +159,11 @@ const deleteSession = async (req: CustomRequest, res: Response): Promise<void> =
     }
 }
 
-const getUserDetailHandler = async (req: Request, res: Response): Promise<void> => {
+const getUserDetailHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const userId = req.params.userId as string
-        const token = req.headers['x-access-token'] as string
-        const user = await getUserDetailService(userId, token)
-        console.log(user)
+        const sessionId: string | undefined = req.user?._id; // Assuming you have the user ID available
+        const user = await getUserDetailService(userId, sessionId)
         res.status(200).json({ body: { data: user } })
     } catch (error) {
         res.status
@@ -195,7 +173,11 @@ const getUserDetailHandler = async (req: Request, res: Response): Promise<void> 
 const updateProfileImageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const sessionId = req.user._id; // Assuming you have the user ID available
-        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId).select('user')
+        const IUserSessionDocument: IUserSessionDocument = await UserSessionModel.findById(sessionId)
+        if(!IUserSessionDocument.active) {
+            res.status(400).json({ body: { message: "Not Authorized" } })
+            return;
+        }
         const userId = IUserSessionDocument.user.toString()
 
         const file_path = req.file?.filename
@@ -224,7 +206,7 @@ const searchQueryHandler = async (req: CustomRequest, res: Response): Promise<vo
 
 export {
     createUser,
-    createSession,
+    createSessionHandler,
     forgotPassword,
     changePassword,
     deleteSession,

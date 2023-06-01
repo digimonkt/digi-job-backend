@@ -11,7 +11,7 @@ export interface IjobCategory {
     active: boolean
 }
 
-interface decodedToken {
+export interface decodedToken {
     _id: string
     ext: number
     iat: number

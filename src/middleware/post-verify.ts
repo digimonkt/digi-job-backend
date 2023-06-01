@@ -3,6 +3,7 @@ import { CustomRequest } from '../interfaces/interfaces';
 
 
 export const postVerify = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    console.log(req.user)
     if(req.user) {
         next()
     } else {
