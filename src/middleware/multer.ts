@@ -5,7 +5,7 @@ import { CustomRequest } from '../interfaces/interfaces';
 
 const storage = multer.diskStorage({
   destination: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(__dirname, '..', 'images');
+    const uploadPath = path.join(__dirname, 'public', 'images');
 
     fs.mkdir(uploadPath, { recursive: true }, (err) => {
       if (err) {
@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
     });
   },
   filename: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(__dirname, '..', 'images', `${req.user._id}`);
+    const uploadPath = path.join(__dirname,  'public', 'images', `${req.user._id}`);
 
     fs.mkdir(uploadPath, { recursive: true }, (err) => {
       if (err) {
@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req: CustomRequest, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'application/pdf') {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type'), false);
@@ -43,3 +43,5 @@ const upload = multer({
 });
 
 export default upload.single('image');
+export const uploadFiles = upload.array('File', 10);
+export const uploadFile = upload.single('File');

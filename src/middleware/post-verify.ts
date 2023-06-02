@@ -6,6 +6,6 @@ export const postVerify = async (req: CustomRequest, res: Response, next: NextFu
     if(req.user) {
         next()
     } else {
-        return res.status(401).json({body: {message: "Access Denied" }});
+        return res.status(401).json( {body: {message: "Access Denied" }});
     }
 }

@@ -11,7 +11,7 @@ export interface IjobCategory {
     active: boolean
 }
 
-interface decodedToken {
+export interface decodedToken {
     _id: string
     ext: number
     iat: number
@@ -20,5 +20,6 @@ export interface CustomRequest extends Request {
     user?: any
     files: any
     query: any
+    sessionId: any
 }
 

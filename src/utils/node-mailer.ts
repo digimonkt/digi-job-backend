@@ -2,7 +2,7 @@
 
 import nodeMailer from "nodemailer";
 
-export const nodeMailFunc = async (email, link) => {
+export const nodeMailFunc = async (email: string,subject: string, content: string) => {
     const transporter = nodeMailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -15,8 +15,8 @@ export const nodeMailFunc = async (email, link) => {
     transporter.sendMail({
         from: process.env.USER_NAME, // sender address
         to: email, // list of receivers
-        subject: "Reset Link", // Subject line
-        html: `<b>Rest Link ${link}</b>`, // html body
+        subject, // Subject line
+        html: content, // html body
     }, (err, info) => {
         if (err) {
             console.log(err.message)

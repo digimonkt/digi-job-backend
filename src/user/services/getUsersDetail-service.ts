@@ -1,21 +1,136 @@
-import UserSessionModel from '../../models/userSession-model';
-import jsonwebtoken, { JwtPayload } from 'jsonwebtoken';
 import UserModel from '../../models/user-model';
-import { ObjectId } from 'mongodb';
+import JobSeekerProfileModel from '../../models/jobSeekerProfile-model';
+import EmployerProfileModel from '../../models/employerProfile-model';
 
-export const getUserDetailService = async (userId: string, token: string) => {
-  if (!userId) {
-    console.log(token);
-    const decodedToken = jsonwebtoken.verify(token, process.env.TOKEN_HEADER_KEY) as JwtPayload;
-    const session = await UserSessionModel.findById(decodedToken._id);
-    userId = session?.user?.toString() || '';
-  }
-  const userIdObj = new ObjectId(userId);
-  console.log(userIdObj);
+export const getUserDetailService = async (userId: string) => {
+  
   const user = await UserModel.aggregate([
     {
-      $match: { _id: userIdObj },
+      $match: { _id: userId },
+    },
+    {
+      $lookup: {
+        from: JobSeekerProfileModel.collection.name,
+        localField: '_id',
+        foreignField: 'user',
+        as: 'jobSeekerProfile',
+      },
+    },
+    {
+      $lookup: {
+        from: EmployerProfileModel.collection.name,
+        localField: "_id",
+        foreignField: "user",
+        as: "employerProfile",
+      },
+    },
+    {
+      $lookup: {
+        from: "Education",
+        localField: "_id",
+        foreignField: "user",
+        as: "education_record",
+      },
+    },
+    {
+      $lookup: {
+        from: "WorkExperience",
+        localField: "_id",
+        foreignField: "user",
+        as: "work_experience",
+      },
+    },
+    {
+      $lookup: {
+        from: "Resume",
+        localField: "_id",
+        foreignField: "user",
+        as: "resume",
+      },
+    },
+    {
+      $lookup: {
+        from: "Languages",
+        localField: "_id",
+        foreignField: "user",
+        as: "languages",
+      },
+    },
+    {
+      $lookup: {
+        from: "Skills",
+        localField: "_id",
+        foreignField: "user",
+        as: "skills",
+      },
+    },
+    {
+      $addFields: {
+        profile: {
+          $cond: {
+            if: { $gt: [{ $size: "$jobSeekerProfile" }, 0] },
+            then: { $arrayElemAt: ["$jobSeekerProfile", 0] },
+            else: { $arrayElemAt: ["$employerProfile", 0] },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        jobSeekerProfile: 0,
+        employerProfile: 0,
+      },
     },
   ]);
-  return user;
+
+  if (user.length > 0) {
+    const userData = user[0];
+    const userDetails = {
+      code: 200,
+      data: {
+        id: userData._id,
+        email: userData.email,
+        mobile_number: userData.mobile_number,
+        country_code: userData.country_code,
+        name: userData.name,
+        image: userData.image,
+        role: userData.role,
+        profile: {},
+        education_record: userData.education_record,
+        work_experience: userData.work_experience,
+        resume: userData.resume,
+        languages: userData.languages,
+        skills: userData.skills,
+      },
+    };
+
+    if (userData.profile) {
+      console.log(userData.profile_role);
+      if (userData.profile_role === "job_seeker") {
+        const jobSeekerProfile = userData.profile;
+        userDetails.data.profile = {
+          gender: jobSeekerProfile.gender,
+          dob: jobSeekerProfile.dob,
+          employment_status: jobSeekerProfile.employment_status,
+          description: jobSeekerProfile.description,
+          market_information: jobSeekerProfile.market_information_notification,
+          job_notification: jobSeekerProfile.job_notification,
+        };
+        userDetails.data.education_record = jobSeekerProfile.education_record
+        userDetails.data.work_experience = jobSeekerProfile.work_experience
+        userDetails.data.languages = jobSeekerProfile.languages
+        userDetails.data.skills = jobSeekerProfile.skills
+      } else if (userData.profile_role === "employer") {
+        const employerProfile = userData.profile;
+        userDetails.data.profile = {
+          organization_name: employerProfile.organization_name,
+          description: employerProfile.description,
+          organization_type: employerProfile.organization_type,
+          license_id: employerProfile.license_id,
+          license_id_file: employerProfile.license_id_file,
+        };
+      }
+    }
+    return userDetails;
+  }
 };

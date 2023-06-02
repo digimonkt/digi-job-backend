@@ -18,7 +18,7 @@ export interface IUserDocument extends IUser, Document {
     updatedAt: Date
 }
 
-enum profile_role {
+export enum profile_role {
     job_seeker = 'job_seeker',
     employer = 'employer',
     admin = 'admin'
