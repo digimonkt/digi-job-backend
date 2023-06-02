@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { Request } from "express"
-export interface ISkill {
+export interface Ijobseekerskill {
     skill: string
     user: mongoose.Schema.Types.ObjectId
 }
