@@ -15,6 +15,7 @@ import {
   getSavedJobsHandler,
   deleteSavedJobHandler,
 } from '../controllers/index';
+import { uploadFiles } from '../../middleware/multer';
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.delete('/languages/:languageId', postVerify, deleteLanguageHandler);
 router.post('/skills', postVerify, addSkillHandler);
 
 router.get('/jobs/apply', postVerify, getAppliedJobsHandler);
-router.post('/jobs/apply/:jobId', postVerify, applyJobHandler);
+router.post('/jobs/apply/:jobId', postVerify, uploadFiles, applyJobHandler);
 
 // Saved jobs routes
 router.post('/jobs/save/:jobId', postVerify, saveJobHandler);
