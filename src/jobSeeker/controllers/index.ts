@@ -4,10 +4,12 @@ import { CustomRequest } from '../../interfaces/interfaces';
 import JobSeekerProfileModel from '../../models/jobSeekerProfile-model';
 import EducationRecordModel from '../../models/educationRecord-model';
 
-import { IeducationRecord } from '../../models/educationRecord-model';
-import JobSeekerLanguageProficiencyModel from '../../models/JobSeekerLanguageProficiency-model'; 
+import { IeducationRecord } from '../../models/educationRecord-model'; 
 import JobSeekerSkillModel from '../../models/jobSeekerSkill-model';
 import { IJobSeekerSkill } from '../../models/jobSeekerSkill-model';
+import SavedJobModel from '../../models/savedJob-model';
+import AppliedJobModel from '../../models/appliedJob-model';
+import JobSeekerLanguageProficiencyModel from '../../models/jobSeekerLanguageProficiency-model';
 
 const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
@@ -45,7 +47,7 @@ const addEducationHandler = async (req: CustomRequest, res: Response): Promise<v
   try {
     // Extract the data from the request body
     
-    const userId = req.user._id.toString()
+    const userId = req.user._id
 
     const { title, start_date, end_date, institute, organization, description, } = req.body;
 
@@ -184,42 +186,151 @@ const addSkillHandler = async (req: CustomRequest, res: Response): Promise<void>
 };
 
 
-// const applyJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
-// };
+const applyJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { jobId } = req.params;
+    const { shortLetter, attachment } = req.body;
+    const sessionId = req.user._id;
 
-// const getAppliedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
-// };
+    // Perform necessary validations and checks before applying for the job
+
+    // Save the application details to the database or perform any other necessary actions
+    const appliedJob = await AppliedJobModel.create({
+      user: sessionId,
+      job: jobId,
+      shortLetter,
+      attachment,
+    });
+
+    res.status(200).json({ data: { message: 'Applied Successfully' } });
+  } catch (error) {
+    console.error('Error while applying for the job:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const getAppliedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { order_by, search_by, page, limit } = req.query;
+    const sessionId = req.user._id;
+
+    // Construct the query parameters based on the request
+    const query = {
+      user: sessionId,
+    };
+
+    // Set the sorting order
+    const sort = order_by === 'ascending' ? 1 : -1;
+
+    // Set the sorting field
+    let sortBy;
+    if (search_by === 'expiration') {
+      sortBy = 'expiration';
+    } else if (search_by === 'salary') {
+      sortBy = 'budget_amount';
+    }
+
+    // Fetch the applied jobs with pagination and sorting
+    const appliedJobs = await AppliedJobModel.find(query)
+      .sort({ [sortBy]: sort })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    // Count the total number of applied jobs
+    const total = await AppliedJobModel.countDocuments(query);
+
+    res.status(200).json({
+      data: {
+        appliedJobs,
+        total,
+        current_page: parseInt(page),
+        current_limit: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error('Error while retrieving applied jobs:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 
-// const saveJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
-// };
+const saveJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { jobId } = req.params;
+    const sessionId = req.user._id;
 
-// const getSavedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
-// };
+    // Check if the job is already saved by the user
+    const existingSavedJob = await SavedJobModel.findOne({ job: jobId, user: sessionId });
 
-// const deleteSavedJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
-// };
+    if (existingSavedJob) {
+      // The job is already saved by the user
+      res.status(200).json({ message: 'Job already saved' });
+    } else {
+      // Save the job for the user
+      const newSavedJob = new SavedJobModel({ job: jobId, user: sessionId });
+      await newSavedJob.save();
+
+      res.status(200).json({ message: 'Saved Successfully' });
+    }
+  } catch (error) {
+    console.error('Error while saving a job:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Handler for getting saved jobs
+const getSavedJobsHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const savedJobs = await SavedJobModel.find({ user: req.user._id})
+      .populate('job')
+      .skip(skip)
+      .limit(limit);
+
+    // Get the total count of saved jobs for the user
+    const totalSavedJobs = await SavedJobModel.countDocuments({ user: req.user._id });
+
+    res.status(200).json({
+      data: {
+        savedJobs,
+        total: totalSavedJobs,
+        current_page: page,
+        current_limit: limit,
+      },
+    });
+  } catch (error) {
+    console.error('Error while retrieving saved jobs:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Handler for deleting a saved job
+const deleteSavedJobHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { jobId } = req.params;
+    await SavedJobModel.findByIdAndDelete(jobId);
+
+    res.status(200).json({ message: 'Job Unsaved' });
+  } catch (error) {
+    console.error('Error while unsaving the job:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 export {
   aboutMeHandler,
   addEducationHandler,
   updateEducationHandler,
   deleteEducationHandler,
-  // addWorkExperienceHandler,
-  // updateWorkExperienceHandler,
-  // deleteWorkExperienceHandler,
-  // addLanguageHandler,
   updateLanguageHandler,
   deleteLanguageHandler,
   addSkillHandler,
-  // getAppliedJobsHandler,
-  // applyJobHandler,
-  // saveJobHandler,
-  // getSavedJobsHandler,
-  // deleteSavedJobHandler,
+  getAppliedJobsHandler,
+  applyJobHandler,
+  saveJobHandler,
+  getSavedJobsHandler,
+  deleteSavedJobHandler,
 }
