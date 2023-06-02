@@ -37,4 +37,4 @@ education_levelSchema.pre('validate', async function (this: Ieducation_levelDocu
     next();
 });
 
-export default mongoose.model<Ieducation_level>('EducationLevel', education_levelSchema);
+export default mongoose.model<Ieducation_level>('Language', education_levelSchema);

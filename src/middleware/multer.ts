@@ -5,7 +5,9 @@ import { CustomRequest } from '../interfaces/interfaces';
 
 const storage = multer.diskStorage({
   destination: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(__dirname, 'public', 'images');
+
+    const uploadPath = path.join(__dirname, '../../public', 'images');
+    console.log(uploadPath);
 
     fs.mkdir(uploadPath, { recursive: true }, (err) => {
       if (err) {
@@ -15,8 +17,8 @@ const storage = multer.diskStorage({
     });
   },
   filename: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(__dirname,  'public', 'images', `${req.user._id}`);
-
+    const uploadPath = path.join(__dirname,  '../../public', 'images', `${req.user._id}`);
+    console.log(uploadPath);
     fs.mkdir(uploadPath, { recursive: true }, (err) => {
       if (err) {
         console.error(err);
@@ -42,6 +44,6 @@ const upload = multer({
   fileFilter,
 });
 
-export default upload.single('image');
+export const uploadImage =  upload.single('image');
 export const uploadFiles = upload.array('File', 10);
 export const uploadFile = upload.single('File');

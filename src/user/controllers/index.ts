@@ -147,13 +147,11 @@ const updateProfileImageHandler = async (req: CustomRequest, res: Response): Pro
     try {
 
         const userId = req.user?._id as string
-
         const file_path = req.file?.filename
         const media_type = req.file?.mimetype
 
         // Set the file path where you want to save the uploaded photo
         await uploadFileService(userId, file_path, media_type)
-
         res.status(200).json({ data: { path: `images/${file_path}` } })
     } catch (error) {
         res.status(500).json({ data: { path: '' } })
