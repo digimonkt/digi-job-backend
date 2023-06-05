@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
-
-export interface ISkill {
+import { Request } from "express"
+export interface Ijobseekerskill {
     skill: string
     user: mongoose.Schema.Types.ObjectId
 }
@@ -10,3 +10,16 @@ export interface IjobCategory {
     slug: string
     active: boolean
 }
+
+export interface decodedToken {
+    _id: string
+    ext: number
+    iat: number
+}
+export interface CustomRequest extends Request {
+    user?: any
+    files: any
+    query: any
+    sessionId: any
+}
+

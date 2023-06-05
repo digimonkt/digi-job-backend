@@ -22,7 +22,4 @@ const UserSessionSchema: Schema = new Schema({
     deleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
-// pre on save hook
-
-
 export default mongoose.model<IUserSessionDocument>('UserSession', UserSessionSchema);
