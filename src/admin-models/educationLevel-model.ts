@@ -1,4 +1,5 @@
 import mongoose, {Document, Schema} from "mongoose";
+import slugify from "slugify";
 
 export interface Ieducation_level {
     title: string
@@ -20,11 +21,20 @@ const education_levelSchema: Schema = new Schema({
         type: String, required: true, unique: true
     },
     active: {
-        type: Boolean
+        type: Boolean,
+        default: true
     },
     deleted: {
-        type: Boolean
+        type: Boolean,
+        default: false
     }
 }, {timestamps: true});
 
-export default mongoose.model<Ieducation_level>('EducationLevel', education_levelSchema);
+education_levelSchema.pre('validate', async function (this: Ieducation_levelDocument, next: ()=> void ) {
+    if (!this.slug){
+        this.slug = slugify(this.title, {lower: true});
+    }
+    next();
+});
+
+export default mongoose.model<Ieducation_level>('Language', education_levelSchema);

@@ -1,15 +1,15 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose"; 
+import { Ijobseekerskill } from "../interfaces/interfaces";
 
-export interface IJobSeekerSkill extends Document {
-  skill: mongoose.Schema.Types.ObjectId;
-  user: mongoose.Schema.Types.ObjectId;
+export interface IjobseekerskillDocument extends Ijobseekerskill, Document { 
+    // Add methods here
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-const JobSeekerSkillSchema: Schema = new Schema({
-  skill: { type: Schema.Types.ObjectId, ref: 'Skill', required: true },
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-});
+const jobseekerskillSchema: Schema = new Schema({
+    jobseekerskill: { type: mongoose.Schema.Types.ObjectId, ref: 'skill', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}, { timestamps: true });
 
-const JobSeekerSkillModel = mongoose.model<IJobSeekerSkill>('JobSeekerSkill', JobSeekerSkillSchema);
-
-export default JobSeekerSkillModel;
+export default mongoose.model<IjobseekerskillDocument>('Jobseekerskill', jobseekerskillSchema);

@@ -1,5 +1,4 @@
 import joi from 'joi'
-import jobDetailsModel from '../models/jobDetails-model';
 
 export const authSchema = joi.object({
     email: joi.string().email().lowercase(),
