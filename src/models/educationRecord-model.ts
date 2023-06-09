@@ -4,7 +4,7 @@ export interface IeducationRecord {
     title: string
     start_date: Date
     end_date: Date
-    institude: string
+    institute: string
     organization: string
     description: string
     user: mongoose.Schema.Types.ObjectId
