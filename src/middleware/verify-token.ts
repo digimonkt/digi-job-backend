@@ -4,6 +4,7 @@ import { CustomRequest, decodedToken } from "../interfaces/interfaces";
 import createAccessToken from "./create-access-token";
 import UserSessionModel from "../models/userSession-model";
 import UserModel from "../models/user-model";
+import env from "../utils/validateEnv";
 
 export const verifyToken = async (
   req: CustomRequest,
@@ -24,7 +25,7 @@ export const verifyToken = async (
     try {
       const verifiedAccessToken = jsonwebtoken.verify(
         accessToken,
-        process.env.TOKEN_HEADER_KEY
+        env.TOKEN_HEADER_KEY
       ) as decodedToken;
       const sessionId = await UserSessionModel.findById(
         verifiedAccessToken._id
@@ -40,7 +41,7 @@ export const verifyToken = async (
         try {
           const verifiedRefreshToken = jsonwebtoken.verify(
             refreshToken,
-            process.env.TOKEN_HEADER_KEY
+            env.TOKEN_HEADER_KEY
           ) as decodedToken;
           const JWT_TOKEN_ACCESS = createAccessToken(verifiedRefreshToken._id);
           res.set({

@@ -22,6 +22,7 @@ import {
   querySchema,
   verificationSchema,
 } from "../../utils/validators";
+import env from "../../utils/validateEnv";
 const createUserHandler = async (
   req: CustomRequest,
   res: Response
@@ -247,7 +248,7 @@ const OTPVerificationHandler = async (
     }
     const verifyToken = jsonwebtoken.verify(
       token,
-      process.env.TOKEN_HEADER_KEY
+      env.TOKEN_HEADER_KEY
     ) as decodedToken;
     const results = await OTPVerificationService(verifyToken._id, otp, req);
     res.status(400).json({ body: { token: results.JWT_TOKEN_ACCESS } });
