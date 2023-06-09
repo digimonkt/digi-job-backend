@@ -25,9 +25,17 @@ import {
   loginSchema,
   querySchema,
   verificationSchema,
-} from "../../utils/validators";
+} from "../../user/userSchema/user.schema";
 import env from "../../utils/validateEnv";
-import { ChangePasswordBodyType, ChangePasswordParams, CreateUserRequestType, LoginRequestType, RequestParamsType, searchParamsType, searchQueryType } from "../userSchema/user.schema";
+import {
+  ChangePasswordBodyType,
+  ChangePasswordParams,
+  CreateUserRequestType,
+  LoginRequestType,
+  RequestParamsType,
+  searchParamsType,
+  searchQueryType,
+} from "../userSchema/user.schema";
 const createUserHandler = async (
   req: CustomRequestBody<
     NonNullable<unknown>,
