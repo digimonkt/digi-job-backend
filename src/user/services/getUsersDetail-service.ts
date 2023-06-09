@@ -1,9 +1,8 @@
-import UserModel from '../../models/user-model';
-import JobSeekerProfileModel from '../../models/jobSeekerProfile-model';
-import EmployerProfileModel from '../../models/employerProfile-model';
+import UserModel from "../../models/user-model";
+import JobSeekerProfileModel from "../../models/jobSeekerProfile-model";
+import EmployerProfileModel from "../../models/employerProfile-model";
 
 export const getUserDetailService = async (userId: string) => {
-  
   const user = await UserModel.aggregate([
     {
       $match: { _id: userId },
@@ -11,9 +10,9 @@ export const getUserDetailService = async (userId: string) => {
     {
       $lookup: {
         from: JobSeekerProfileModel.collection.name,
-        localField: '_id',
-        foreignField: 'user',
-        as: 'jobSeekerProfile',
+        localField: "_id",
+        foreignField: "user",
+        as: "jobSeekerProfile",
       },
     },
     {
@@ -94,7 +93,7 @@ export const getUserDetailService = async (userId: string) => {
         country_code: userData.country_code,
         name: userData.name,
         image: userData.image,
-        role: userData.role,
+        role: userData.role || userData.profile_role,
         profile: {},
         education_record: userData.education_record,
         work_experience: userData.work_experience,
@@ -116,10 +115,10 @@ export const getUserDetailService = async (userId: string) => {
           market_information: jobSeekerProfile.market_information_notification,
           job_notification: jobSeekerProfile.job_notification,
         };
-        userDetails.data.education_record = jobSeekerProfile.education_record
-        userDetails.data.work_experience = jobSeekerProfile.work_experience
-        userDetails.data.languages = jobSeekerProfile.languages
-        userDetails.data.skills = jobSeekerProfile.skills
+        userDetails.data.education_record = jobSeekerProfile.education_record;
+        userDetails.data.work_experience = jobSeekerProfile.work_experience;
+        userDetails.data.languages = jobSeekerProfile.languages;
+        userDetails.data.skills = jobSeekerProfile.skills;
       } else if (userData.profile_role === "employer") {
         const employerProfile = userData.profile;
         userDetails.data.profile = {

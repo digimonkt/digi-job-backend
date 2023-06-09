@@ -1,18 +1,19 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const MONGO_USERNAME = process.env.MONGO_USERNAME || 'admin';
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD || 'admin';
-const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.rpp1gux.mongodb.net/koor`
-
-const SERVER_PORT= process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 1337;
+const MONGO_USERNAME = process.env.MONGO_USERNAME || "admin";
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD || "admin";
+const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.rpp1gux.mongodb.net/koor`;
+const SERVER_PORT = process.env.SERVER_PORT
+  ? Number(process.env.SERVER_PORT)
+  : 1337;
 
 export const config = {
-    mongo: {
-        url: MONGO_URL
-    },
-    server: {
-        port: SERVER_PORT
-    },
+  mongo: {
+    url: MONGO_URL,
+  },
+  server: {
+    port: SERVER_PORT,
+  },
 };
