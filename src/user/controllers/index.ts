@@ -29,9 +29,10 @@ const createUserHandler = async (
   try {
     const { email, password, role, mobile_number, country_code } = req.body;
     await authSchema.validateAsync(req.body);
-    const isExit = await UserModel.findOne({ email });
-    if (isExit) {
-      res.status(403).json({ message: "Email Already Exits" });
+    const isExist = await UserModel.findOne({ email });
+    if (isExist) {
+      res.status(403).json({ message: "Email Already Exists" });
+      return;
     }
     const { JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH } = await createUserService(
       email,
