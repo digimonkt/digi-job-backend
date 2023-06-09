@@ -1,15 +1,8 @@
 import { Response } from "express";
 import {
-  ChangePasswordBodyType,
-  ChangePasswordParams,
-  CreateUserRequestType,
   CustomRequest,
   CustomRequestBody,
-  LoginRequestType,
-  RequestParamsType,
   decodedToken,
-  searchParamsType,
-  searchQueryType,
 } from "../../interfaces/interfaces";
 import UserModel, { IUserDocument } from "../../models/user-model";
 import UserSessionModel, {
@@ -34,6 +27,7 @@ import {
   verificationSchema,
 } from "../../utils/validators";
 import env from "../../utils/validateEnv";
+import { ChangePasswordBodyType, ChangePasswordParams, CreateUserRequestType, LoginRequestType, RequestParamsType, searchParamsType, searchQueryType } from "../userSchema/user.schema";
 const createUserHandler = async (
   req: CustomRequestBody<
     NonNullable<unknown>,

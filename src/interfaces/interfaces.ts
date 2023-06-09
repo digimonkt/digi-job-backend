@@ -34,36 +34,3 @@ export interface CustomRequestBody<P, Q, T>
   params: P;
 }
 
-export interface CreateUserRequestType {
-  email: string;
-  password: string | number;
-  role: profile_role;
-  mobile_number: string;
-  country_code: string;
-}
-
-export interface LoginRequestType {
-  email: string;
-  password: string | number;
-  role: profile_role;
-}
-
-export interface RequestParamsType {
-  email: string;
-}
-
-export interface ChangePasswordParams {
-  token: string;
-}
-
-export interface ChangePasswordBodyType {
-  password: string;
-}
-
-export interface searchParamsType {
-  role: "employer" | "job_seeker";
-}
-
-export interface searchQueryType {
-  search: string;
-}

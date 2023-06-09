@@ -12,16 +12,16 @@ interface Env {
 }
 
 const env: Env = cleanEnv(process.env, {
-  MONGO_USERNAME: str({ default: "admin" }),
-  MONGO_PASSWORD: str({ default: process.env.MONGO_PASSWORD || "" }),
-  TOKEN_HEADER_KEY: str({ default: process.env.TOKEN_HEADER_KEY || "" }),
-  USER_NAME: str({ default: process.env.USER_NAME || "" }),
-  PASSWORD: str({ default: process.env.PASSWORD || "" }),
+  MONGO_USERNAME: str(),
+  MONGO_PASSWORD: str(),
+  TOKEN_HEADER_KEY: str(),
+  USER_NAME: str(),
+  PASSWORD: str(),
   SERVER_PORT: num({ default: 1337 }),
 });
 
-const MONGO_USERNAME = env.MONGO_USERNAME || "admin";
-const MONGO_PASSWORD = env.MONGO_PASSWORD || "admin";
+const MONGO_USERNAME = env.MONGO_USERNAME;
+const MONGO_PASSWORD = env.MONGO_PASSWORD;
 const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.rpp1gux.mongodb.net/koor`;
 const SERVER_PORT = env.SERVER_PORT;
 
