@@ -1,5 +1,16 @@
 import { Response } from "express";
-import { CustomRequest, decodedToken } from "../../interfaces/interfaces";
+import {
+  ChangePasswordBodyType,
+  ChangePasswordParams,
+  CreateUserRequestType,
+  CustomRequest,
+  CustomRequestBody,
+  LoginRequestType,
+  RequestParamsType,
+  decodedToken,
+  searchParamsType,
+  searchQueryType,
+} from "../../interfaces/interfaces";
 import UserModel, { IUserDocument } from "../../models/user-model";
 import UserSessionModel, {
   IUserSessionDocument,
@@ -24,7 +35,11 @@ import {
 } from "../../utils/validators";
 import env from "../../utils/validateEnv";
 const createUserHandler = async (
-  req: CustomRequest,
+  req: CustomRequestBody<
+    NonNullable<unknown>,
+    NonNullable<unknown>,
+    CreateUserRequestType
+  >,
   res: Response
 ): Promise<void> => {
   try {
@@ -37,7 +52,7 @@ const createUserHandler = async (
     }
     const { JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH } = await createUserService(
       email,
-      password,
+      password as string,
       role,
       mobile_number,
       country_code,
@@ -54,7 +69,11 @@ const createUserHandler = async (
 };
 
 const createSessionHandler = async (
-  req: CustomRequest,
+  req: CustomRequestBody<
+    NonNullable<unknown>,
+    NonNullable<unknown>,
+    LoginRequestType
+  >,
   res: Response
 ): Promise<void> => {
   try {
@@ -70,7 +89,7 @@ const createSessionHandler = async (
     }
     if (
       user !== null &&
-      (await bcrypt.compare(password, user.password)) &&
+      (await bcrypt.compare(password as string, user.password)) &&
       user.profile_role === role
     ) {
       const { JWT_TOKEN_ACCESS, JWT_TOKEN_REFRESH } =
@@ -88,12 +107,15 @@ const createSessionHandler = async (
 };
 
 const forgotPassword = async (
-  req: CustomRequest,
+  req: CustomRequestBody<
+    RequestParamsType,
+    NonNullable<unknown>,
+    NonNullable<unknown>
+  >,
   res: Response
 ): Promise<void> => {
   try {
     const { email } = req.params as { email: string };
-    console.log({ email });
     await querySchema.validateAsync({ email });
     if (!email) {
       res.status(400).json({ body: { message: "Enter email" } });
@@ -120,7 +142,11 @@ const forgotPassword = async (
 };
 
 const changePasswordHandler = async (
-  req: CustomRequest,
+  req: CustomRequestBody<
+    ChangePasswordParams,
+    NonNullable<unknown>,
+    ChangePasswordBodyType
+  >,
   res: Response
 ): Promise<void> => {
   try {
@@ -201,7 +227,11 @@ const updateProfileImageHandler = async (
 };
 
 const searchQueryHandler = async (
-  req: CustomRequest,
+  req: CustomRequestBody<
+    searchParamsType,
+    searchQueryType,
+    NonNullable<unknown>
+  >,
   res: Response
 ): Promise<void> => {
   try {
