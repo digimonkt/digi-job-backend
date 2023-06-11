@@ -6,10 +6,10 @@ import EducationRecordModel from '../../models/educationRecord-model';
 
 import { IeducationRecord } from '../../models/educationRecord-model'; 
 import JobSeekerSkillModel from '../../models/jobSeekerSkill-model';
-import { IJobSeekerSkill } from '../../models/jobSeekerSkill-model';
+import { Ijobseekerskill } from '../../interfaces/interfaces';
 import SavedJobModel from '../../models/savedJob-model';
 import AppliedJobModel from '../../models/appliedJob-model';
-import JobSeekerLanguageProficiencyModel from '../../models/jobSeekerLanguageProficiency-model';
+import jobSeekerLanguageProficiencyModel from '../../models/JobSeekerLanguageProficiency-model';
 
 const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
@@ -121,7 +121,7 @@ const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise
     }
 
     // Update the language record using findByIdAndUpdate
-    await JobSeekerLanguageProficiencyModel.findByIdAndUpdate(languageId, updatedFields);
+    await jobSeekerLanguageProficiencyModel.findByIdAndUpdate(languageId, updatedFields);
 
     res.status(200).json({ message: 'Updated Successfully' });
   } catch (error) {
@@ -136,7 +136,7 @@ const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise
     const { languageId } = req.params;
 
     // Delete the language record using findByIdAndDelete
-    await JobSeekerLanguageProficiencyModel.findByIdAndDelete(languageId);
+    await jobSeekerLanguageProficiencyModel.findByIdAndDelete(languageId);
 
     res.status(200).json({ message: 'Deleted Successfully' });
   } catch (error) {
@@ -170,7 +170,7 @@ const addSkillHandler = async (req: CustomRequest, res: Response): Promise<void>
 
     // Add skills
     if (skill_add && skill_add.length > 0) {
-      const newSkills: IJobSeekerSkill[] = skill_add.map((skill: string) => ({
+      const newSkills: Ijobseekerskill[] = skill_add.map((skill: string) => ({
         skill,
         user: userId,
       }));
