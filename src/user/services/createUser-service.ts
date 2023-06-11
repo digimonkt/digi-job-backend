@@ -1,5 +1,4 @@
 import {
-  CreateUserRequestType,
   CustomRequest,
   CustomRequestBody,
 } from "../../interfaces/interfaces";
@@ -9,6 +8,7 @@ import EmployerProfileModel from "../../models/employerProfile-model";
 import JobSeekerProfileModel from "../../models/jobSeekerProfile-model";
 import UserModel from "../../models/user-model";
 import UserSessionModel from "../../models/userSession-model";
+import { CreateUserRequestType } from "../userSchema/user.schema";
 
 export const createUserService = async (
   email: string,
