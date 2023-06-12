@@ -22,6 +22,7 @@ export const verifyToken = async (
     : null;
   const refreshToken = req.headers["x-refresh"] as string;
 
+  console.log({ accessToken, refreshToken });
   if (accessToken) {
     try {
       const verifiedAccessToken = jsonwebtoken.verify(
