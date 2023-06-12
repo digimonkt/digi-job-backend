@@ -9,7 +9,7 @@ export const ROUTER = [
     router: userRoute,
   },
   {
-    path: "/user/employer",
+    path: "/users/employer",
     router: employerRoute,
   },
   {

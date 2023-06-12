@@ -21,6 +21,7 @@ export const verifyToken = async (
     ? authorizationHeader.replace("Bearer ", "")
     : null;
   const refreshToken = req.headers["x-refresh"] as string;
+
   if (accessToken) {
     try {
       const verifiedAccessToken = jsonwebtoken.verify(
