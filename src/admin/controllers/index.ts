@@ -5,6 +5,7 @@ import skillModel, { IskillDocument } from "../../admin-models/skill-model";
 import jobCategoryModel, { IjobCategoryDocument } from "../../admin-models/jobCategory-model";
 import { createSchema, deleteSchema, getSchema } from "../../utils/admin-validators";
 import jobSubCategoryModel, { JsubCategoryDocument } from "../../admin-models/jobSubCategory-models";
+import mongoose from "mongoose";
 
 const createLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
@@ -236,7 +237,7 @@ const getJobCategoryHandler = async (req: CustomRequest, res: Response): Promise
       })),
     }
     res.status(200).json({
-      data: result
+      ...result
     })
   }
   catch (error) {
@@ -266,26 +267,12 @@ const deleteJobCategoryHandler = async (req: CustomRequest, res: Response): Prom
 const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { title, jobCategoryId } = req.body as { title: string, jobCategoryId: string };
-    await createSchema.validateAsync({ title, jobCategoryId })
-
-    if (jobCategoryId) {
-      const jobCategory = await jobCategoryModel.findById(jobCategoryId);
-      if (!jobCategoryId) {
-        res.status(404).json({
-          message: "job category not found"
-        })
-      }
-    }
-    const jobSubCategory = await jobCategoryModel.create({ title, jobCategoryId });
-
+    let Objectid = new mongoose.Types.ObjectId(jobCategoryId)
+    console.log("Objectid", Objectid)
+    const jobSubCategory = await jobSubCategoryModel.create({ title, categoryId: Objectid });
     res.status(201).json({
-      data: {
-        id: jobSubCategory._id,
-        title: jobSubCategory.title,
-        jobCategoryId: jobSubCategory._id
-      }
+      jobSubCategory
     });
-
   } catch (error) {
     res.status(500).json({
       message: error.message
@@ -295,14 +282,12 @@ const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): P
 
 const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { search, page, limit } = req.query as { search: string, page: string, limit: string }
-    getSchema.validateAsync({ search, page, limit })
+    const { categoryId } = req.query as { categoryId: string }
+    console.log("category id get job", categoryId);
+    console.log("request query", req.query);
+
     let jobSubCategory: JsubCategoryDocument[] | null
-    if (search) {
-      jobSubCategory = await jobSubCategoryModel.find({ title: { $regex: search, $options: 'i' } })
-    } else {
-      jobSubCategory = await jobSubCategoryModel.find()
-    }
+    jobSubCategory = await jobSubCategoryModel.find({ categoryId })
     const result = {
       count: jobSubCategory?.length,
       results: jobSubCategory.map((item) => ({
@@ -320,8 +305,6 @@ const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<voi
     })
   }
 }
-
-
 
 export {
   createLanguageHandler,
