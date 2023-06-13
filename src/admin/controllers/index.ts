@@ -12,6 +12,8 @@ import {
   deleteSchema,
   getSchema,
 } from "../../utils/admin-validators";
+import CountryModel from "../../models/country";
+import CityModel from "../../models/cities";
 
 const createLanguageHandler = async (
   req: CustomRequest,
@@ -320,6 +322,46 @@ const deleteJobCategoryHandler = async (
   }
 };
 
+const getAllCountryHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    let limit = parseInt(req.query.limit as string, 10);
+    if (!limit || isNaN(limit)) {
+      limit = 100; // Set default limit to 100 if no or invalid limit is provided
+    }
+    const results = await CountryModel.find().limit(limit);
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getAllCityHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const results = await CityModel.find({
+      country_id: req.query.countryId,
+    });
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export {
   createLanguageHandler,
   getLanguageHandler,
@@ -333,4 +375,6 @@ export {
   createJobCategoryHandler,
   deleteJobCategoryHandler,
   getJobCategoryHandler,
+  getAllCountryHandler,
+  getAllCityHandler,
 };

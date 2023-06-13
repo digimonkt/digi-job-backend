@@ -9,6 +9,7 @@ interface Env {
   USER_NAME: string;
   PASSWORD: string;
   SERVER_PORT: number;
+  MONGOURL: string;
 }
 
 const env: Env = cleanEnv(process.env, {
@@ -18,12 +19,7 @@ const env: Env = cleanEnv(process.env, {
   USER_NAME: str(),
   PASSWORD: str(),
   SERVER_PORT: num({ default: 1337 }),
+  MONGOURL: str(),
 });
 
-const MONGO_USERNAME = env.MONGO_USERNAME;
-const MONGO_PASSWORD = env.MONGO_PASSWORD;
-const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.rpp1gux.mongodb.net/koor`;
-const SERVER_PORT = env.SERVER_PORT;
-
 export default env;
-export { MONGO_URL, SERVER_PORT };
