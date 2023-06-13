@@ -15,8 +15,9 @@ import {
   getLanguageHandler,
   getSkillHandler,
   createSubJobCategoryHandler,
-  getJobSubCategory
-
+  getJobSubCategory,
+  getAllCountryHandler,
+  getAllCityHandler,
 } from "../controllers";
 
 const router = Router();
@@ -47,5 +48,9 @@ router.delete(
 
 router.post("/job-sub-category", postVerify, createSubJobCategoryHandler);
 router.get("/job-sub-category", postVerify, getJobSubCategory);
+
+router.get("/country", getAllCountryHandler);
+router.get("/city", getAllCityHandler);
+
 
 export default router;

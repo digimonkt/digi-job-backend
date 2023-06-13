@@ -1,18 +1,30 @@
 import { Response } from "express";
-import languageModel, { Ieducation_levelDocument } from "../../admin-models/educationLevel-model";
+import {
+  Ieducation_levelDocument,
+} from "../../admin-models/educationLevel-model";
+import education_levelSchema from "../../admin-models/educationLevel-model";
+import languageModel from "../../admin-models/language-model-copy";
+
 import { CustomRequest } from "../../interfaces/interfaces";
 import skillModel, { IskillDocument } from "../../admin-models/skill-model";
-import jobCategoryModel, { IjobCategoryDocument } from "../../admin-models/jobCategory-model";
-import { createSchema, deleteSchema, getSchema } from "../../utils/admin-validators";
-import jobSubCategoryModel, { JsubCategoryDocument } from "../../admin-models/jobSubCategory-models";
+import jobCategoryModel, {
+  IjobCategoryDocument,
+} from "../../admin-models/jobCategory-model";
+import {
+  createSchema,
+  deleteSchema,
+  getSchema,
+} from "../../utils/admin-validators";
+import CountryModel from "../../models/country";
+import CityModel from "../../models/cities";
+import jobSubCategoryModels, { JsubCategoryDocument } from "../../admin-models/jobSubCategory-models";
 import mongoose from "mongoose";
 
 const createLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { title } = req.body
-    await createSchema.validateAsync({ title })
-    const language = await languageModel.create({ title })
-
+    const { title } = req.body;
+    await createSchema.validateAsync({ title });
+    const language = await languageModel.create({ title });
     res.status(201).json({
       data: {
         id: language._id,
@@ -45,7 +57,7 @@ const getLanguageHandler = async (req: CustomRequest, res: Response): Promise<vo
       })),
     }
     res.status(200).json({
-      data: result
+      ...result
     })
   } catch (error) {
     res.status(500).json({
@@ -109,7 +121,7 @@ const getSkillHandler = async (req: CustomRequest, res: Response): Promise<void>
     }
     console.log(result)
     res.status(200).json({
-      data: result
+      ...result
     })
   } catch (error) {
     res.status(500).json({
@@ -137,10 +149,9 @@ const deleteSkillHandler = async (req: CustomRequest, res: Response): Promise<vo
 
 const createEducationLevelHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { title } = req.body
-    await createSchema.validateAsync({ title })
-    const educationLevel = await languageModel.create({ title })
-
+    const { title } = req.body;
+    await createSchema.validateAsync({ title });
+    const educationLevel = await education_levelSchema.create({ title });
     res.status(201).json({
       data: {
         id: educationLevel._id,
@@ -161,9 +172,11 @@ const getEducationLevelHandler = async (req: CustomRequest, res: Response): Prom
     getSchema.validateAsync({ search, page, limit })
     let educationLevel: Ieducation_levelDocument[] | null
     if (search) {
-      educationLevel = await languageModel.find({ title: { $regex: search, $options: 'i' } })
+      educationLevel = await education_levelSchema.find({
+        title: { $regex: search, $options: "i" },
+      });
     } else {
-      educationLevel = await languageModel.find()
+      educationLevel = await education_levelSchema.find();
     }
     const result = {
       count: educationLevel?.length,
@@ -173,7 +186,7 @@ const getEducationLevelHandler = async (req: CustomRequest, res: Response): Prom
       })),
     }
     res.status(200).json({
-      data: result
+      ...result
     })
   }
   catch (error) {
@@ -268,7 +281,7 @@ const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): P
   try {
     const { title, jobCategoryId } = req.body as { title: string, jobCategoryId: string };
     let Objectid = new mongoose.Types.ObjectId(jobCategoryId)
-    const jobSubCategory = await jobSubCategoryModel.create({ title, categoryId: Objectid });
+    const jobSubCategory = await jobSubCategoryModels.create({ title, categoryId: Objectid });
     res.status(201).json({
       jobSubCategory
     });
@@ -283,7 +296,7 @@ const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<voi
   try {
     const { categoryId } = req.query as { categoryId: string }
     let jobSubCategory: JsubCategoryDocument[] | null
-    jobSubCategory = await jobSubCategoryModel.find({ categoryId })
+    jobSubCategory = await jobSubCategoryModels.find({ categoryId })
     const result = {
       count: jobSubCategory?.length,
       results: jobSubCategory.map((item) => ({
@@ -302,6 +315,46 @@ const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<voi
   }
 }
 
+const getAllCountryHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    let limit = parseInt(req.query.limit as string, 10);
+    if (!limit || isNaN(limit)) {
+      limit = 100; // Set default limit to 100 if no or invalid limit is provided
+    }
+    const results = await CountryModel.find().limit(limit);
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getAllCityHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const results = await CityModel.find({
+      country_id: req.query.countryId,
+    });
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 
 
 export {
@@ -318,5 +371,7 @@ export {
   deleteJobCategoryHandler,
   getJobCategoryHandler,
   createSubJobCategoryHandler,
-  getJobSubCategory
-}
+  getJobSubCategory,
+  getAllCountryHandler,
+  getAllCityHandler,
+};
