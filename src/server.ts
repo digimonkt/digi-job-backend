@@ -23,7 +23,7 @@ mongoose
 const serverConfig = () => {
   console.log("Server configuration started");
   app.use(cors());
-  
+
   app.use((req, res, next) => {
     console.log(
       `Incoming -> Method: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}] - Method: [${req.method}]`

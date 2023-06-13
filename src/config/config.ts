@@ -1,9 +1,9 @@
-import { MONGO_URL, SERVER_PORT } from "../utils/validateEnv";
+import env from "../utils/validateEnv";
 export const config = {
   mongo: {
-    url: MONGO_URL,
+    url: env.MONGOURL,
   },
   server: {
-    port: SERVER_PORT,
+    port: env.SERVER_PORT,
   },
 };

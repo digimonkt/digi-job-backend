@@ -1,7 +1,10 @@
 import { Response } from "express";
-import languageModel, {
+import  {
   Ieducation_levelDocument,
 } from "../../admin-models/educationLevel-model";
+import education_levelSchema from "../../admin-models/educationLevel-model";
+import languageModel from "../../admin-models/language-model-copy";
+
 import { CustomRequest } from "../../interfaces/interfaces";
 import skillModel, { IskillDocument } from "../../admin-models/skill-model";
 import jobCategoryModel, {
@@ -12,6 +15,8 @@ import {
   deleteSchema,
   getSchema,
 } from "../../utils/admin-validators";
+import CountryModel from "../../models/country";
+import CityModel from "../../models/cities";
 
 const createLanguageHandler = async (
   req: CustomRequest,
@@ -21,7 +26,6 @@ const createLanguageHandler = async (
     const { title } = req.body;
     await createSchema.validateAsync({ title });
     const language = await languageModel.create({ title });
-
     res.status(201).json({
       data: {
         id: language._id,
@@ -173,8 +177,7 @@ const createEducationLevelHandler = async (
   try {
     const { title } = req.body;
     await createSchema.validateAsync({ title });
-    const educationLevel = await languageModel.create({ title });
-
+    const educationLevel = await education_levelSchema.create({ title });
     res.status(201).json({
       data: {
         id: educationLevel._id,
@@ -201,11 +204,11 @@ const getEducationLevelHandler = async (
     getSchema.validateAsync({ search, page, limit });
     let educationLevel: Ieducation_levelDocument[] | null;
     if (search) {
-      educationLevel = await languageModel.find({
+      educationLevel = await education_levelSchema.find({
         title: { $regex: search, $options: "i" },
       });
     } else {
-      educationLevel = await languageModel.find();
+      educationLevel = await education_levelSchema.find();
     }
     const result = {
       count: educationLevel?.length,
@@ -320,6 +323,46 @@ const deleteJobCategoryHandler = async (
   }
 };
 
+const getAllCountryHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    let limit = parseInt(req.query.limit as string, 10);
+    if (!limit || isNaN(limit)) {
+      limit = 100; // Set default limit to 100 if no or invalid limit is provided
+    }
+    const results = await CountryModel.find().limit(limit);
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getAllCityHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const results = await CityModel.find({
+      country_id: req.query.countryId,
+    });
+    res.status(200).json({
+      message: "Countries retrieved successfully",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export {
   createLanguageHandler,
   getLanguageHandler,
@@ -333,4 +376,6 @@ export {
   createJobCategoryHandler,
   deleteJobCategoryHandler,
   getJobCategoryHandler,
+  getAllCountryHandler,
+  getAllCityHandler,
 };

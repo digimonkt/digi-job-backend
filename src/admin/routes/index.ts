@@ -14,6 +14,8 @@ import {
   getJobCategoryHandler,
   getLanguageHandler,
   getSkillHandler,
+  getAllCountryHandler,
+  getAllCityHandler,
 } from "../controllers";
 
 const router = Router();
@@ -41,5 +43,9 @@ router.delete(
   postVerify,
   deleteJobCategoryHandler
 );
+
+router.get("/country", getAllCountryHandler);
+router.get("/city", getAllCityHandler);
+
 
 export default router;
