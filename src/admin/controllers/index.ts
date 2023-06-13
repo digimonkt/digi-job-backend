@@ -268,7 +268,6 @@ const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): P
   try {
     const { title, jobCategoryId } = req.body as { title: string, jobCategoryId: string };
     let Objectid = new mongoose.Types.ObjectId(jobCategoryId)
-    console.log("Objectid", Objectid)
     const jobSubCategory = await jobSubCategoryModel.create({ title, categoryId: Objectid });
     res.status(201).json({
       jobSubCategory
@@ -283,9 +282,6 @@ const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): P
 const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { categoryId } = req.query as { categoryId: string }
-    console.log("category id get job", categoryId);
-    console.log("request query", req.query);
-
     let jobSubCategory: JsubCategoryDocument[] | null
     jobSubCategory = await jobSubCategoryModel.find({ categoryId })
     const result = {
