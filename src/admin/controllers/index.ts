@@ -1,5 +1,5 @@
 import { Response } from "express";
-import  {
+import {
   Ieducation_levelDocument,
 } from "../../admin-models/educationLevel-model";
 import education_levelSchema from "../../admin-models/educationLevel-model";
@@ -17,11 +17,10 @@ import {
 } from "../../utils/admin-validators";
 import CountryModel from "../../models/country";
 import CityModel from "../../models/cities";
+import jobSubCategoryModels, { JsubCategoryDocument } from "../../admin-models/jobSubCategory-models";
+import mongoose from "mongoose";
 
-const createLanguageHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const createLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { title } = req.body;
     await createSchema.validateAsync({ title });
@@ -30,33 +29,24 @@ const createLanguageHandler = async (
       data: {
         id: language._id,
         title: language.title,
-      },
-    });
+      }
+    })
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+}
 
-const getLanguageHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const getLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { search, page, limit } = req.query as {
-      search: string;
-      page: string;
-      limit: string;
-    };
-    getSchema.validateAsync({ search, page, limit });
-    let language: Ieducation_levelDocument[] | null;
+    const { search, page, limit } = req.query as { search: string, page: string, limit: string }
+    getSchema.validateAsync({ search, page, limit })
+    let language: Ieducation_levelDocument[] | null
     if (search) {
-      language = await languageModel.find({
-        title: { $regex: search, $options: "i" },
-      });
+      language = await languageModel.find({ title: { $regex: search, $options: 'i' } })
     } else {
-      language = await languageModel.find();
+      language = await languageModel.find()
     }
 
     const result = {
@@ -65,115 +55,99 @@ const getLanguageHandler = async (
         id: item._id,
         title: item.title,
       })),
-    };
+    }
     res.status(200).json({
-      ...result,
-    });
+      ...result
+    })
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+}
 
-const deleteLanguageHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { languageId } = req.params as { languageId: string };
-    deleteSchema.validateAsync({ languageId });
+    const { languageId } = req.params as { languageId: string }
+    deleteSchema.validateAsync({ languageId })
     await languageModel.findByIdAndUpdate(languageId, { active: false });
     res.status(200).json({
-      message: "Deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+      message: 'Deleted successfully'
+    })
   }
-};
+  catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
 
-const createSkill = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const createSkill = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { title } = req.body as { title: string };
-    await createSchema.validateAsync({ title });
-    const skill = await skillModel.create({ title });
+    const { title } = req.body as { title: string }
+    await createSchema.validateAsync({ title })
+    const skill = await skillModel.create({ title })
 
     res.status(201).json({
       data: {
         id: skill._id,
-        title: skill.title,
-      },
-    });
+        title: skill.title
+      }
+    })
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+}
 
-const getSkillHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const getSkillHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { search, page, limit } = req.query as {
-      search: string;
-      page: string;
-      limit: string;
-    };
-    getSchema.validateAsync({ search, page, limit });
-    let skill: IskillDocument[] | null;
+    const { search, page, limit } = req.query as { search: string, page: string, limit: string }
+    getSchema.validateAsync({ search, page, limit })
+    let skill: IskillDocument[] | null
     if (search) {
-      skill = await skillModel.find({
-        title: { $regex: search, $options: "i" },
-      });
+      skill = await skillModel.find({ title: { $regex: search, $options: 'i' } })
     } else {
-      skill = await skillModel.find();
+      skill = await skillModel.find()
     }
+    console.log(skill)
     const result = {
       count: skill?.length,
       results: skill?.map((item) => ({
         id: item._id,
         title: item.title,
       })),
-    };
+    }
+    console.log(result)
     res.status(200).json({
-      ...result,
-    });
+      ...result
+    })
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+}
 
-const deleteSkillHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+
+
+const deleteSkillHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { skillId } = req.params as { skillId: string };
-    deleteSchema.validateAsync({ skillId });
+    const { skillId } = req.params as { skillId: string }
+    deleteSchema.validateAsync({ skillId })
     await skillModel.findByIdAndUpdate(skillId, { active: false });
     res.status(200).json({
-      message: "Deleted successfully",
-    });
+      message: 'Deleted successfully'
+    })
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+}
 
-const createEducationLevelHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const createEducationLevelHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { title } = req.body;
     await createSchema.validateAsync({ title });
@@ -182,27 +156,21 @@ const createEducationLevelHandler = async (
       data: {
         id: educationLevel._id,
         title: educationLevel.title,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+      }
+    })
   }
-};
+  catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
 
-const getEducationLevelHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const getEducationLevelHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { search, page, limit } = req.query as {
-      search: string;
-      page: string;
-      limit: string;
-    };
-    getSchema.validateAsync({ search, page, limit });
-    let educationLevel: Ieducation_levelDocument[] | null;
+    const { search, page, limit } = req.query as { search: string, page: string, limit: string }
+    getSchema.validateAsync({ search, page, limit })
+    let educationLevel: Ieducation_levelDocument[] | null
     if (search) {
       educationLevel = await education_levelSchema.find({
         title: { $regex: search, $options: "i" },
@@ -216,74 +184,63 @@ const getEducationLevelHandler = async (
         id: item._id,
         title: item.title,
       })),
-    };
+    }
     res.status(200).json({
-      ...result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+      ...result
+    })
   }
-};
+  catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
 
-const deleteEducationLevelHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const deleteEducationLevelHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { educationLevelId } = req.query as { educationLevelId: string };
-    deleteSchema.validateAsync({ educationLevelId });
+    deleteSchema.validateAsync({ educationLevelId })
     await languageModel.findByIdAndUpdate(educationLevelId, { active: false });
     res.status(200).json({
-      message: "Deleted successfully",
+      message: 'Deleted successfully'
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: error.message
     });
   }
 };
 
-const createJobCategoryHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+
+const createJobCategoryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { title } = req.body as { title: string };
-    await createSchema.validateAsync({ title });
+    await createSchema.validateAsync({ title })
     const jobCategory = await jobCategoryModel.create({ title });
+
     res.status(201).json({
       data: {
         id: jobCategory._id,
-        title: jobCategory.title,
-      },
+        title: jobCategory.title
+      }
     });
+
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: error.message
     });
   }
-};
+}
 
-const getJobCategoryHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+const getJobCategoryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
-    const { search, page, limit } = req.query as {
-      search: string;
-      page: string;
-      limit: string;
-    };
-    getSchema.validateAsync({ search, page, limit });
-    let jobCategory: IjobCategoryDocument[] | null;
+    const { search, page, limit } = req.query as { search: string, page: string, limit: string }
+    getSchema.validateAsync({ search, page, limit })
+    let jobCategory: IjobCategoryDocument[] | null
     if (search) {
-      jobCategory = await jobCategoryModel.find({
-        title: { $regex: search, $options: "i" },
-      });
+      jobCategory = await jobCategoryModel.find({ title: { $regex: search, $options: 'i' } })
     } else {
-      jobCategory = await jobCategoryModel.find();
+      jobCategory = await jobCategoryModel.find()
     }
     const result = {
       count: jobCategory?.length,
@@ -291,37 +248,72 @@ const getJobCategoryHandler = async (
         id: item._id,
         title: item.title,
       })),
-    };
+    }
     res.status(200).json({
-      ...result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+      ...result
+    })
   }
-};
+  catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
 
-const deleteJobCategoryHandler = async (
-  req: CustomRequest,
-  res: Response
-): Promise<void> => {
+
+
+const deleteJobCategoryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { jobCategoryId } = req.body as { jobCategoryId: string[] };
-    await jobCategoryModel.updateMany(
-      { _id: { $in: jobCategoryId } },
-      { active: false }
-    );
+    await jobCategoryModel.updateMany({ _id: { $in: jobCategoryId } }, { active: false });
 
     res.status(200).json({
-      message: "Jobs updated successfully",
+      message: 'Jobs updated successfully'
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: error.message
     });
   }
 };
+
+const createSubJobCategoryHandler = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { title, jobCategoryId } = req.body as { title: string, jobCategoryId: string };
+    let Objectid = new mongoose.Types.ObjectId(jobCategoryId)
+    const jobSubCategory = await jobSubCategoryModels.create({ title, categoryId: Objectid });
+    res.status(201).json({
+      jobSubCategory
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+}
+
+const getJobSubCategory = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    const { categoryId } = req.query as { categoryId: string }
+    let jobSubCategory: JsubCategoryDocument[] | null
+    jobSubCategory = await jobSubCategoryModels.find({ categoryId })
+    const result = {
+      count: jobSubCategory?.length,
+      results: jobSubCategory.map((item) => ({
+        id: item._id,
+        title: item.title,
+      })),
+    }
+    res.status(200).json({
+      ...result
+    })
+  }
+  catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
 
 const getAllCountryHandler = async (
   req: CustomRequest,
@@ -363,6 +355,8 @@ const getAllCityHandler = async (
   }
 };
 
+
+
 export {
   createLanguageHandler,
   getLanguageHandler,
@@ -376,6 +370,8 @@ export {
   createJobCategoryHandler,
   deleteJobCategoryHandler,
   getJobCategoryHandler,
+  createSubJobCategoryHandler,
+  getJobSubCategory,
   getAllCountryHandler,
   getAllCityHandler,
 };

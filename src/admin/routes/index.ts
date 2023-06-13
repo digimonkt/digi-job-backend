@@ -14,6 +14,8 @@ import {
   getJobCategoryHandler,
   getLanguageHandler,
   getSkillHandler,
+  createSubJobCategoryHandler,
+  getJobSubCategory,
   getAllCountryHandler,
   getAllCityHandler,
 } from "../controllers";
@@ -43,6 +45,9 @@ router.delete(
   postVerify,
   deleteJobCategoryHandler
 );
+
+router.post("/job-sub-category", postVerify, createSubJobCategoryHandler);
+router.get("/job-sub-category", postVerify, getJobSubCategory);
 
 router.get("/country", getAllCountryHandler);
 router.get("/city", getAllCityHandler);

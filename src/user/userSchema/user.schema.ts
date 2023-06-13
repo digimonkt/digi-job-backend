@@ -8,7 +8,7 @@ export const authSchema = joi
     password: joi.string().min(8).required(),
     role: joi.string().valid("employer", "job_seeker", "admin").required(),
     mobile_number: joi.string().min(10).max(10),
-    country_code: joi.string().min(2).max(2),
+    country_code: joi.string().min(1).max(4),
   })
   .or("email", "mobile_number")
   .required();
