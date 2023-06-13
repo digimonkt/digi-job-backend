@@ -1,7 +1,10 @@
 import { Response } from "express";
-import languageModel, {
+import  {
   Ieducation_levelDocument,
 } from "../../admin-models/educationLevel-model";
+import education_levelSchema from "../../admin-models/educationLevel-model";
+import languageModel from "../../admin-models/language-model-copy";
+
 import { CustomRequest } from "../../interfaces/interfaces";
 import skillModel, { IskillDocument } from "../../admin-models/skill-model";
 import jobCategoryModel, {
@@ -23,7 +26,6 @@ const createLanguageHandler = async (
     const { title } = req.body;
     await createSchema.validateAsync({ title });
     const language = await languageModel.create({ title });
-
     res.status(201).json({
       data: {
         id: language._id,
@@ -175,8 +177,7 @@ const createEducationLevelHandler = async (
   try {
     const { title } = req.body;
     await createSchema.validateAsync({ title });
-    const educationLevel = await languageModel.create({ title });
-
+    const educationLevel = await education_levelSchema.create({ title });
     res.status(201).json({
       data: {
         id: educationLevel._id,
@@ -203,11 +204,11 @@ const getEducationLevelHandler = async (
     getSchema.validateAsync({ search, page, limit });
     let educationLevel: Ieducation_levelDocument[] | null;
     if (search) {
-      educationLevel = await languageModel.find({
+      educationLevel = await education_levelSchema.find({
         title: { $regex: search, $options: "i" },
       });
     } else {
-      educationLevel = await languageModel.find();
+      educationLevel = await education_levelSchema.find();
     }
     const result = {
       count: educationLevel?.length,
