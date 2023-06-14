@@ -12,6 +12,9 @@ import {
   searchSchema,
 } from "../../utils/employer-validators";
 import { aboutMeService } from "../service";
+import { json } from "envalid";
+import mongoose from "mongoose";
+import { ObjectId } from "../../utils/constant";
 
 const getJobHandler = async (
   req: CustomRequest,
@@ -95,25 +98,28 @@ const createJobHandler = async (
 ): Promise<void> => {
   try {
     await createJobSchema.validateAsync(req.body);
-    const file_path = req.files.filename;
-    const media_type = req.files.mimetype;
-    console.log({ hello: req.files });
-    const media = await MediaModel.create({
-      file_path,
-      media_type,
-    });
+    const mediaId = []
+    for (let i = 0; i < req.files.length; i++) {
+      const element = req.files[i];
+      const media = await MediaModel.create({
+        file_path: element.path,
+        media_type: element.mimetype
+      });
+      mediaId.push(new ObjectId(media._id));
+    }
+    const languageArray = req.body.language.map(len => JSON.parse(len));
     const newJob = new JobDetailsModel({
       ...req.body,
+      language: languageArray.map((len) => {
+        let Objectid = new mongoose.Types.ObjectId(len.language);
+        return Objectid;
+      }),
+      user: new ObjectId(req.user._id),
+      attachement: [...mediaId]
     });
-
-    await JobAttachmentsItemModel.create({
-      job: newJob._id,
-      attachment: media._id,
-    });
-    // Save the new job to the database
     await newJob.save();
-
     res.json({ code: 200, data: { message: "Job Added successfully" } });
+
   } catch (error) {
     console.error("Error while creating job:", error);
     res.status(500).json({ error: "Internal Server Error" });

@@ -31,8 +31,8 @@ interface IJobDetails extends Document {
   budget_amount: number;
   budget_pay_period?: payPeriod;
   description?: string;
-  country?: mongoose.Types.ObjectId;
-  city?: mongoose.Types.ObjectId;
+  country?: string;
+  city?: string;
   address?: string;
   job_category: mongoose.Types.ObjectId[];
   is_full_time?: boolean;
@@ -47,8 +47,9 @@ interface IJobDetails extends Document {
   skill: mongoose.Types.ObjectId[];
   status?: status;
   experience: number;
-  deadline: Date;
+  // deadline: Date;
   start_date: Date;
+  attachement: mongoose.Types.ObjectId[];
 }
 
 const JobDetailsSchema: Schema = new Schema(
@@ -80,11 +81,11 @@ const JobDetailsSchema: Schema = new Schema(
       type: String,
     },
     country: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: "Country",
     },
     city: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: "City",
     },
     address: {
@@ -134,8 +135,8 @@ const JobDetailsSchema: Schema = new Schema(
         },
       ],
       validate: {
-        validator: function (languages: mongoose.Types.ObjectId[]) {
-          return languages.length <= 3;
+        validator: function (language: mongoose.Types.ObjectId[]) {
+          return language.length <= 3;
         },
         message: "Maximum 3 languages allowed",
       },
@@ -161,10 +162,19 @@ const JobDetailsSchema: Schema = new Schema(
       type: Number,
       required: true,
     },
-    deadline: {
-      type: Date,
-      required: true,
+    attachement: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Media",
+          required: true,
+        },
+      ],
     },
+    // deadline: {
+    //   type: Date,
+    //   required: true,
+    // },
     start_date: {
       type: Date,
     },
