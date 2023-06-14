@@ -1,27 +1,27 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export enum status {
-  Active = 'active',
-  Inactive = 'inactive',
-  Deleted = 'deleted'
+  Active = "active",
+  Inactive = "inactive",
+  Deleted = "deleted",
 }
 
 enum payPeriod {
-  Hourly = 'hourly',
-  Daily = 'daily',
-  Weekly = 'weekly',
-  Monthly = 'monthly',
-  Yearly = 'yearly'
+  Hourly = "hourly",
+  Daily = "daily",
+  Weekly = "weekly",
+  Monthly = "monthly",
+  Yearly = "yearly",
 }
 
 enum timing {
-  OneDayWeek = '1_day_week',
-  TwoDaysWeek = '2_days_week',
-  ThreeDaysWeek = '3_days_week',
-  FourDaysWeek = '4_days_week',
-  FiveDaysWeek = '5_days_week',
-  SixDaysWeek = '6_days_week',
-  SevenDaysWeek = '7_days_week'
+  OneDayWeek = "1_day_week",
+  TwoDaysWeek = "2_days_week",
+  ThreeDaysWeek = "3_days_week",
+  FourDaysWeek = "4_days_week",
+  FiveDaysWeek = "5_days_week",
+  SixDaysWeek = "6_days_week",
+  SevenDaysWeek = "7_days_week",
 }
 
 interface IJobDetails extends Document {
@@ -31,8 +31,8 @@ interface IJobDetails extends Document {
   budget_amount: number;
   budget_pay_period?: payPeriod;
   description?: string;
-  country?: mongoose.Types.ObjectId;
-  city?: mongoose.Types.ObjectId;
+  country?: string;
+  city?: string;
   address?: string;
   job_category: mongoose.Types.ObjectId[];
   is_full_time?: boolean;
@@ -47,114 +47,139 @@ interface IJobDetails extends Document {
   skill: mongoose.Types.ObjectId[];
   status?: status;
   experience: number;
-  deadline: Date;
+  // deadline: Date;
   start_date: Date;
+  attachement: mongoose.Types.ObjectId[];
 }
 
-const JobDetailsSchema: Schema = new Schema ({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
-  budget_currency: {
-    type: String,
-    required: true
-  },
-  budget_amount: {
-    type: Number,
-    required: true
-  },
-  budget_pay_period: {
-    type: String
-  },
-  description: {
-    type: String
-  },
-  country: {
-    type: Schema.Types.ObjectId,
-    ref: 'Country',
-  },
-  city: {
-    type: Schema.Types.ObjectId,
-    ref: 'City',
-  },
-  address: {
-    type: String
-  },
-  job_category: [{
-    type: Schema.Types.ObjectId,
-    ref: 'JobCategory'
-  }],
-  is_full_time: {
-    type: Boolean
-  },
-  is_part_time: {
-    type: Boolean
-  },
-  has_contract: {
-    type: Boolean
-  },
-  timing: {
-    type: String
-  },
-  contact_email: {
-    type: String
-  },
-  contact_phone: {
-    type: String
-  },
-  contact_whatsapp: {
-    type: String
-  },
-  highest_education: {
-    type: Schema.Types.ObjectId,
-    ref: 'Education',
-    required: true
-  },
-  language: {
-    type: [{
+const JobDetailsSchema: Schema = new Schema(
+  {
+    user: {
       type: Schema.Types.ObjectId,
-      ref: 'Language',
-      required: true
-    }],
-    validate: {
-      validator: function (languages: mongoose.Types.ObjectId[]) {
-        return languages.length <= 3;
+      ref: "User",
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    budget_currency: {
+      type: String,
+      required: true,
+    },
+    job_sub_category: {
+      type: String,
+    },
+    budget_amount: {
+      type: Number,
+      required: true,
+    },
+    budget_pay_period: {
+      type: String,
+    },
+    description: {
+      type: String,
+    },
+    country: {
+      type: String,
+      ref: "Country",
+    },
+    city: {
+      type: String,
+      ref: "City",
+    },
+    address: {
+      type: String,
+    },
+    job_category: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "JobCategory",
       },
-      message: 'Maximum 3 languages allowed'
-    }
-  },
-  skill: {
-    type: [{
+    ],
+    is_full_time: {
+      type: Boolean,
+      default: false,
+    },
+    is_part_time: {
+      type: Boolean,
+      default: false,
+    },
+    has_contract: {
+      type: Boolean,
+      default: false,
+    },
+    timing: {
+      type: String,
+    },
+    contact_email: {
+      type: String,
+    },
+    contact_phone: {
+      type: String,
+    },
+    contact_whatsapp: {
+      type: String,
+    },
+    highest_education: {
       type: Schema.Types.ObjectId,
-      ref: 'Skill'
-    }],
-    validate: {
-      validator: function (skills: mongoose.Types.ObjectId[]) {
-        return skills.length <= 3;
+      ref: "Education",
+      required: true,
+    },
+    language: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Language",
+          required: true,
+        },
+      ],
+      validate: {
+        validator: function (language: mongoose.Types.ObjectId[]) {
+          return language.length <= 3;
+        },
+        message: "Maximum 3 languages allowed",
       },
-      message: 'Maximum 3 skills allowed'
-    }
+    },
+    skill: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Skill",
+        },
+      ],
+      validate: {
+        validator: function (skills: mongoose.Types.ObjectId[]) {
+          return skills.length <= 3;
+        },
+        message: "Maximum 3 skills allowed",
+      },
+    },
+    status: {
+      type: String,
+    },
+    experience: {
+      type: Number,
+      required: true,
+    },
+    attachement: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Media",
+          required: true,
+        },
+      ],
+    },
+    // deadline: {
+    //   type: Date,
+    //   required: true,
+    // },
+    start_date: {
+      type: Date,
+    },
   },
-  status: {
-    type: String,
-  },
-  experience: {
-    type: Number,
-    required: true
-  },
-  deadline: {
-    type: Date,
-    required: true
-  },
-  start_date: {
-    type: Date,
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-export default mongoose.model<IJobDetails>('JobDetails', JobDetailsSchema);
+export default mongoose.model<IJobDetails>("JobDetails", JobDetailsSchema);
