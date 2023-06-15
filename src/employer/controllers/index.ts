@@ -239,12 +239,16 @@ const aboutMeHandler = async (
 ): Promise<void> => {
   try {
     const employerId = req.user._id; // Assuming you have the user ID available
+    console.log("employer Id", employerId);
 
     const {
       organization_name,
       organization_type,
       mobile_number,
       country_code,
+      country,
+      city,
+      description,
       market_information_notification,
       other_notification,
       license_id,
@@ -257,6 +261,9 @@ const aboutMeHandler = async (
       organization_type,
       mobile_number,
       country_code,
+      country,
+      city,
+      description,
       market_information_notification,
       other_notification,
       license_id,

@@ -1,4 +1,4 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Iemployer {
     user: mongoose.Schema.Types.ObjectId
@@ -7,7 +7,8 @@ export interface Iemployer {
     market_information_notification: boolean
     other_notification: boolean
     license_id: string
-    license_id_file: mongoose.Schema.Types.ObjectId
+    license_id_file: mongoose.Schema.Types.ObjectId,
+    attachement: mongoose.Types.ObjectId[]
 }
 
 enum organization_type {
@@ -34,6 +35,7 @@ const employerSchema: Schema = new Schema({
     },
     market_information_notification: {
         type: Boolean, required: false, default: false
+
     },
     other_notification: {
         type: Boolean, required: false, default: false
@@ -43,7 +45,16 @@ const employerSchema: Schema = new Schema({
     },
     license_id_file: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Media', required: false
-    }
-}, {timestamps: true});
+    },
+    attachement: {
+        type: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Media",
+                required: true,
+            },
+        ],
+    },
+}, { timestamps: true });
 
 export default mongoose.model<IemployerDocument>('Employer', employerSchema);

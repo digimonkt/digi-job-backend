@@ -52,5 +52,4 @@ router.get("/job-sub-category", postVerify, getJobSubCategory);
 router.get("/country", getAllCountryHandler);
 router.get("/city", getAllCityHandler);
 
-
 export default router;

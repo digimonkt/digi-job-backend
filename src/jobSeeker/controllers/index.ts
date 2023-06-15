@@ -106,7 +106,6 @@ const deleteEducationHandler = async (req: CustomRequest, res: Response): Promis
   }
 };
 
-
 const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     const { languageId } = req.params;
