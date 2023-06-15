@@ -29,7 +29,7 @@ export const createJobSchema = joi.object({
 export const searchSchema = joi
   .object({
     employerId: joi.string(),
-    search: joi.string(),
+    search: joi.string().default("").empty(""),
     limit: joi.number(),
     page: joi.number(),
   })
