@@ -90,6 +90,77 @@ const getJobHandler = async (
   }
 };
 
+const getJobByIdHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { jobId } = req.query;
+    const newData = await JobDetailsModel.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          _id: jobId,
+        },
+      },
+      {
+        $lookup: {
+          from: MediaModel.collection.name,
+          let: { mediaIds: "$attachement" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$mediaIds"],
+                },
+              },
+            },
+          ],
+          as: "jobAttachments",
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          id: { $first: "$_id" },
+          user: { $first: "$user" },
+          title: { $first: "$title" },
+          budget_currency: { $first: "$budget_currency" },
+          job_sub_category: { $first: "$job_sub_category" },
+          budget_amount: { $first: "$budget_amount" },
+          budget_pay_period: { $first: "$budget_pay_period" },
+          description: { $first: "$description" },
+          country: { $first: "$country" },
+          city: { $first: "$city" },
+          address: { $first: "$address" },
+          job_category: { $first: "$job_category" },
+          is_full_time: { $first: "$is_full_time" },
+          is_part_time: { $first: "$is_part_time" },
+          has_contract: { $first: "$has_contract" },
+          highest_education: { $first: "$highest_education" },
+          language: { $first: "$language" },
+          skill: { $first: "$skill" },
+          experience: { $first: "$experience" },
+          attachement: { $first: "$attachement" },
+          createdAt: { $first: "$createdAt" },
+          updatedAt: { $first: "$updatedAt" },
+          jobAttachments: { $first: "$jobAttachments.file_path" },
+        },
+      },
+    ]);
+    const data = {
+      results: newData,
+    };
+    res.status(200).json({
+      ...data,
+    });
+    return;
+  } catch (error) {
+    console.error("Error while fetching jobs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getJobAnalysisHandler = async (
   req: CustomRequest,
   res: Response
@@ -316,4 +387,5 @@ export {
   updateJobHandler,
   updateJobStatusHandler,
   aboutMeHandler,
+  getJobByIdHandler
 };
