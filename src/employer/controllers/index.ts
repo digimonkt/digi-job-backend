@@ -15,6 +15,7 @@ import { aboutMeService } from "../service";
 import { json } from "envalid";
 import mongoose from "mongoose";
 import { ObjectId } from "../../utils/constant";
+import path from "path";
 
 const getJobHandler = async (
   req: CustomRequest,
@@ -23,30 +24,137 @@ const getJobHandler = async (
   try {
     const { employerId, search, limit, page } = req.query;
     await searchSchema.validateAsync({ employerId, search, limit, page });
+    const newData = await JobDetailsModel.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          title: { $regex: search, $options: "i" }, // Perform case-insensitive regex search on the 'title' field
+        },
+      },
+      {
+        $lookup: {
+          from: MediaModel.collection.name,
+          let: { mediaIds: "$attachement" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$mediaIds"],
+                },
+              },
+            },
+          ],
+          as: "jobAttachments",
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          id: { $first: "$_id" },
+          user: { $first: "$user" },
+          title: { $first: "$title" },
+          budget_currency: { $first: "$budget_currency" },
+          job_sub_category: { $first: "$job_sub_category" },
+          budget_amount: { $first: "$budget_amount" },
+          budget_pay_period: { $first: "$budget_pay_period" },
+          description: { $first: "$description" },
+          country: { $first: "$country" },
+          city: { $first: "$city" },
+          address: { $first: "$address" },
+          job_category: { $first: "$job_category" },
+          is_full_time: { $first: "$is_full_time" },
+          is_part_time: { $first: "$is_part_time" },
+          has_contract: { $first: "$has_contract" },
+          highest_education: { $first: "$highest_education" },
+          language: { $first: "$language" },
+          skill: { $first: "$skill" },
+          experience: { $first: "$experience" },
+          attachement: { $first: "$attachement" },
+          createdAt: { $first: "$createdAt" },
+          updatedAt: { $first: "$updatedAt" },
+          jobAttachments: { $first: "$jobAttachments.file_path" },
+        },
+      },
+    ]);
 
-    let query = {};
+    const data = {
+      results: newData,
+    };
+    res.status(200).json({
+      ...data,
+    });
+    return;
+  } catch (error) {
+    console.error("Error while fetching jobs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
-    if (employerId) {
-      query = { employerId: employerId };
-    }
-
-    if (search) {
-      query = {
-        ...query,
-        title: { $regex: search, $options: "i" },
-      };
-    }
-
-    let jobs = JobDetailsModel.find(query);
-
-    if (limit && page) {
-      const startIndex = (page - 1) * limit;
-      jobs = jobs.skip(startIndex).limit(limit);
-    }
-
-    const filteredJobs = await jobs.exec();
-
-    res.status(200).json({ data: filteredJobs });
+const getJobByIdHandler = async (
+  req: CustomRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { jobId } = req.query;
+    const newData = await JobDetailsModel.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          _id: jobId,
+        },
+      },
+      {
+        $lookup: {
+          from: MediaModel.collection.name,
+          let: { mediaIds: "$attachement" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$mediaIds"],
+                },
+              },
+            },
+          ],
+          as: "jobAttachments",
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          id: { $first: "$_id" },
+          user: { $first: "$user" },
+          title: { $first: "$title" },
+          budget_currency: { $first: "$budget_currency" },
+          job_sub_category: { $first: "$job_sub_category" },
+          budget_amount: { $first: "$budget_amount" },
+          budget_pay_period: { $first: "$budget_pay_period" },
+          description: { $first: "$description" },
+          country: { $first: "$country" },
+          city: { $first: "$city" },
+          address: { $first: "$address" },
+          job_category: { $first: "$job_category" },
+          is_full_time: { $first: "$is_full_time" },
+          is_part_time: { $first: "$is_part_time" },
+          has_contract: { $first: "$has_contract" },
+          highest_education: { $first: "$highest_education" },
+          language: { $first: "$language" },
+          skill: { $first: "$skill" },
+          experience: { $first: "$experience" },
+          attachement: { $first: "$attachement" },
+          createdAt: { $first: "$createdAt" },
+          updatedAt: { $first: "$updatedAt" },
+          jobAttachments: { $first: "$jobAttachments.file_path" },
+        },
+      },
+    ]);
+    const data = {
+      results: newData,
+    };
+    res.status(200).json({
+      ...data,
+    });
+    return;
   } catch (error) {
     console.error("Error while fetching jobs:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -98,16 +206,16 @@ const createJobHandler = async (
 ): Promise<void> => {
   try {
     await createJobSchema.validateAsync(req.body);
-    const mediaId = []
+    const mediaId = [];
     for (let i = 0; i < req.files.length; i++) {
       const element = req.files[i];
       const media = await MediaModel.create({
         file_path: element.path,
-        media_type: element.mimetype
+        media_type: element.mimetype,
       });
       mediaId.push(new ObjectId(media._id));
     }
-    const languageArray = req.body.language.map(len => JSON.parse(len));
+    const languageArray = req.body.language.map((len) => JSON.parse(len));
     const newJob = new JobDetailsModel({
       ...req.body,
       language: languageArray.map((len) => {
@@ -115,11 +223,10 @@ const createJobHandler = async (
         return Objectid;
       }),
       user: new ObjectId(req.user._id),
-      attachement: [...mediaId]
+      attachement: [...mediaId],
     });
     await newJob.save();
     res.json({ code: 200, data: { message: "Job Added successfully" } });
-
   } catch (error) {
     console.error("Error while creating job:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -273,4 +380,5 @@ export {
   updateJobHandler,
   updateJobStatusHandler,
   aboutMeHandler,
+  getJobByIdHandler
 };
