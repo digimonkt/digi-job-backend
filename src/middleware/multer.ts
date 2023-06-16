@@ -1,34 +1,23 @@
 import multer from "multer";
 import fs from "fs";
-import path from "path";
 import { CustomRequest } from "../interfaces/interfaces";
+
+// Function to create the directory if it doesn't exist
+const createDirectoryIfNotExists = (directoryPath) => {
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath, { recursive: true });
+  }
+};
 
 const storage = multer.diskStorage({
   destination: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(__dirname, "../../public", "images");
-    fs.mkdir(uploadPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error(err);
-      }
-      cb(null, uploadPath);
-    });
+    const uploadPath = "public/images";
+    createDirectoryIfNotExists(uploadPath);
+    cb(null, uploadPath);
   },
   filename: (req: CustomRequest, file, cb) => {
-    const uploadPath = path.join(
-      __dirname,
-      "../../public",
-      "images",
-      `${req.user._id}`
-    );
-    fs.mkdir(uploadPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error({ err });
-      }
-      cb(
-        null,
-        `${req.user._id}/${Date.now()}${path.extname(file.originalname)}`
-      );
-    });
+    const fileName = `${Date.now()}${file.originalname}`;
+    cb(null, fileName);
   },
 });
 
@@ -52,6 +41,37 @@ const upload = multer({
   fileFilter,
 });
 
-export const uploadImage = upload.single("image");
-export const uploadFiles = upload.array("File", 10);
-export const uploadFile = upload.single("File");
+export const uploadImage = (req, res, next) => {
+  createDirectoryIfNotExists("public/images");
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    req.file.path = req.file.path.replace(/\\/g, "/");
+    next();
+  });
+};
+
+export const uploadFiles = (req, res, next) => {
+  createDirectoryIfNotExists("public/images");
+  upload.array("File", 10)(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    req.files.forEach((file) => {
+      file.path = file.path.replace(/\\/g, "/");
+    });
+    next();
+  });
+};
+
+export const uploadFile = (req, res, next) => {
+  createDirectoryIfNotExists("public/images");
+  upload.single("File")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    req.file.path = req.file.path.replace(/\\/g, "/");
+    next();
+  });
+};

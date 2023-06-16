@@ -9,6 +9,7 @@ export const getUserDetailService = async (userId: string) => {
       {
         $match: { _id: userId },
       },
+
       {
         $lookup: {
           from: JobSeekerProfileModel.collection.name,
@@ -83,7 +84,6 @@ export const getUserDetailService = async (userId: string) => {
         },
       },
     ]);
-
     if (user.length > 0) {
       const userData = user[0];
       const userDetails = {

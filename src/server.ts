@@ -7,6 +7,7 @@ import { verifyToken } from "./middleware/verify-token";
 import { postVerify } from "./middleware/post-verify";
 import { getUserDetailHandler } from "./user/controllers";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 
@@ -38,8 +39,7 @@ const serverConfig = () => {
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  app.use(express.static("public"));
-
+  app.use("/public", express.static(path.join(process.cwd(), "public")));
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
