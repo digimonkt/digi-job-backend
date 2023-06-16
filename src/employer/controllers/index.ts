@@ -357,16 +357,9 @@ const aboutMeHandler = async (
       license_id,
     } = req.body;
 
-    await aboutMeSchema.validateAsync(req.body);
+    // await aboutMeSchema.validateAsync(req.body);
     const results = await aboutMeService(
-      employerId,
-      organization_name,
-      organization_type,
-      mobile_number,
-      country_code,
-      market_information_notification,
-      other_notification,
-      license_id,
+      req.body,
       req
     );
     if (!results) {

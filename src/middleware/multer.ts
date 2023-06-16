@@ -6,7 +6,6 @@ import { CustomRequest } from "../interfaces/interfaces";
 const storage = multer.diskStorage({
   destination: (req: CustomRequest, file, cb) => {
     const uploadPath = path.join(__dirname, "../../public", "images");
-
     fs.mkdir(uploadPath, { recursive: true }, (err) => {
       if (err) {
         console.error(err);

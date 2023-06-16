@@ -4,7 +4,7 @@ import { CustomRequest } from '../../interfaces/interfaces';
 import JobSeekerProfileModel from '../../models/jobSeekerProfile-model';
 import EducationRecordModel from '../../models/educationRecord-model';
 
-import { IeducationRecord } from '../../models/educationRecord-model'; 
+import { IeducationRecord } from '../../models/educationRecord-model';
 import JobSeekerSkillModel from '../../models/jobSeekerSkill-model';
 import { Ijobseekerskill } from '../../interfaces/interfaces';
 import SavedJobModel from '../../models/savedJob-model';
@@ -41,12 +41,12 @@ const aboutMeHandler = async (req: CustomRequest, res: Response): Promise<void> 
     console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
-};  
+};
 
 const addEducationHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     // Extract the data from the request body
-    
+
     const userId = req.user._id
 
     const { title, start_date, end_date, institute, organization, description, } = req.body;
@@ -62,7 +62,7 @@ const addEducationHandler = async (req: CustomRequest, res: Response): Promise<v
     };
 
     // Save the new education to the database
-    const newEducationObject =  await EducationRecordModel.create(newEducation);
+    const newEducationObject = await EducationRecordModel.create(newEducation);
 
     res.status(201).json(newEducationObject);
   } catch (error) {
@@ -74,7 +74,7 @@ const addEducationHandler = async (req: CustomRequest, res: Response): Promise<v
 const updateEducationHandler = async (req: CustomRequest, res: Response): Promise<void> => {
   try {
     // Extract the education ID from the request parameters
-       
+
     const { educationId } = req.params;
     const { title, start_date, end_date, institute, organization, description, } = req.body;
 
@@ -108,7 +108,7 @@ const deleteEducationHandler = async (req: CustomRequest, res: Response): Promis
 
 
 const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  try { 
+  try {
     const { languageId } = req.params;
     const { written, spoken } = req.body;
 
@@ -132,7 +132,7 @@ const updateLanguageHandler = async (req: CustomRequest, res: Response): Promise
 
 
 const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  try {    
+  try {
     const { languageId } = req.params;
 
     // Delete the language record using findByIdAndDelete
@@ -146,16 +146,16 @@ const deleteLanguageHandler = async (req: CustomRequest, res: Response): Promise
 };
 
 // const addWorkExperienceHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
+
 // };
 
 
 // const updateWorkExperienceHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
+
 // };
 
 // const deleteWorkExperienceHandler = async (req: CustomRequest, res: Response): Promise<void> => {
-  
+
 // };
 
 const addSkillHandler = async (req: CustomRequest, res: Response): Promise<void> => {
@@ -285,7 +285,7 @@ const getSavedJobsHandler = async (req: CustomRequest, res: Response): Promise<v
 
     const skip = (page - 1) * limit;
 
-    const savedJobs = await SavedJobModel.find({ user: req.user._id})
+    const savedJobs = await SavedJobModel.find({ user: req.user._id })
       .populate('job')
       .skip(skip)
       .limit(limit);
