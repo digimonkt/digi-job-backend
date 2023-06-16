@@ -1,4 +1,4 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Iemployer {
     user: mongoose.Schema.Types.ObjectId
@@ -44,6 +44,6 @@ const employerSchema: Schema = new Schema({
     license_id_file: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Media', required: false
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
 export default mongoose.model<IemployerDocument>('Employer', employerSchema);

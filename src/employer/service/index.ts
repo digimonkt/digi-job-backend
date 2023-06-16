@@ -1,9 +1,9 @@
 import { CustomRequest } from "../../interfaces/interfaces";
-import EmployerProfileModel from "../../models/employerProfile-model";
+import employerProfileModel from "../../models/employerProfile-model";
 import MediaModel from "../../models/media-model";
 import { ObjectId } from "../../utils/constant";
 
-export const aboutMeService = async (employerId: string, organization_name: string, organization_type: string, mobile_number: string, country_code: string, market_information_notification: string, other_notification: string, license_id: string, req: CustomRequest) => {
+export const aboutMeService = async (body, req) => {
     try {
         // const file_path = req.files.filename;
         // const media_type = req.files.mimetype;
@@ -13,8 +13,8 @@ export const aboutMeService = async (employerId: string, organization_name: stri
         //     media_type,
         // });
         const mediaId = [];
-        for (let i = 0; i < req.files.length; i++) {
-            const element = req.files[i];
+        for (let i = 0; i < req.file.length; i++) {
+            const element = req.file[i];
             const media = await MediaModel.create({
                 file_path: element.path,
                 media_type: element.mimetype,
@@ -22,17 +22,12 @@ export const aboutMeService = async (employerId: string, organization_name: stri
             mediaId.push(new ObjectId(media._id));
         }
 
+
         // Find the employer in the database and update the about section
-        const employer = await EmployerProfileModel.findByIdAndUpdate(
-            employerId,
+        const employer = await employerProfileModel.findOneAndUpdate(
+            { user: req.user._id },
             {
-                organization_name,
-                organization_type,
-                mobile_number,
-                country_code,
-                market_information_notification,
-                other_notification,
-                license_id,
+                ...body,
                 // license_id_file: media._id, // Assuming the license file is stored in req.file.buffer
                 licenseMedia: [...mediaId],
             },
