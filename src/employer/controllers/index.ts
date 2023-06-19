@@ -345,23 +345,7 @@ const aboutMeHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const employerId = req.user._id; // Assuming you have the user ID available
-
-    const {
-      organization_name,
-      organization_type,
-      mobile_number,
-      country_code,
-      market_information_notification,
-      other_notification,
-      license_id,
-    } = req.body;
-
-    // await aboutMeSchema.validateAsync(req.body);
-    const results = await aboutMeService(
-      req.body,
-      req
-    );
+    const results = await aboutMeService(req.body, req);
     if (!results) {
       res.status(404).json({ error: "EmployerProfileModel not found" });
       return;
@@ -380,5 +364,5 @@ export {
   updateJobHandler,
   updateJobStatusHandler,
   aboutMeHandler,
-  getJobByIdHandler
+  getJobByIdHandler,
 };
